@@ -1,0 +1,12 @@
+export default function ProductsPage() {
+  return (
+    <div className="flex flex-col gap-6">
+      <h1 className="text-2xl font-semibold">Products Management</h1>
+      <div className="rounded border border-black/[.08] dark:border-white/[.145] p-6">
+        <p className="text-sm opacity-80">List, add, and edit products.</p>
+      </div>
+    </div>
+  );
+}
+
+
