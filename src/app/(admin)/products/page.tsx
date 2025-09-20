@@ -1,10 +1,32 @@
+"use client";
+
+import ProductModal from "./_components/ProductModal";
+import ProductsTable from "./_components/ProductsTable";
+import { useProductsStore } from "./_store";
+
 export default function ProductsPage() {
+  const { openCreate, setSearch, search } = useProductsStore();
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Products Management</h1>
-      <div className="rounded border border-black/[.08] dark:border-white/[.145] p-6">
-        <p className="text-sm opacity-80">List, add, and edit products.</p>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold">Products Management</h1>
+        <button onClick={openCreate} className="h-9 rounded px-3 bg-[#6c47ff] text-white">+ Add new product</button>
       </div>
+
+      <div className="flex items-center gap-3">
+        <div className="relative w-80">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search"
+            className="h-9 w-full rounded border border-black/[.08] pl-9 pr-3 outline-none focus:ring-2 focus:ring-[#6c47ff]/30"
+          />
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 opacity-60">🔍</span>
+        </div>
+      </div>
+
+      <ProductsTable />
+      <ProductModal />
     </div>
   );
 }
