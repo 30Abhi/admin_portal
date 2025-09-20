@@ -102,7 +102,7 @@ export default function PillSelect({
       </div>
 
       {/* Quick add options - show filtered options */}
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1 max-h-32 overflow-y-auto">
         {filteredOptions
           .filter((option) => !value.includes(option))
           .map((option) => (

@@ -10,7 +10,11 @@ const navItems = [
   { href: "/ads", label: "Ads" },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  onItemClick?: () => void;
+}
+
+export default function Sidebar({onItemClick }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -21,6 +25,7 @@ export default function Sidebar() {
           <Link
             key={item.href}
             href={item.href}
+            onClick={onItemClick}
             className={`rounded px-3 py-2 text-sm transition-colors ${
               isActive
                 ? "bg-[#f2f2f2] text-black"
