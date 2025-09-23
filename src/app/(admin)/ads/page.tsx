@@ -1,6 +1,6 @@
 "use client";
 
-import { color } from "chart.js/helpers";
+// removed unused import
 import { useRef, useState } from "react";
 
 type AdSlotProps = {

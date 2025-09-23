@@ -2,7 +2,6 @@
 
 import { create } from "zustand";
 import { useEffect } from "react";
-import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import type { AuthState } from "@/types";
 
@@ -49,13 +48,13 @@ const useAuthStore = create<AuthState>((set) => ({
 
 export function useAuth() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, verifyToken } = useAuthStore();
+  const { isAuthenticated, isLoading, verifyToken, logout } = useAuthStore();
 
   useEffect(() => {
     verifyToken();
   }, [verifyToken]);
 
-  return { isAuthenticated, isLoading };
+  return { isAuthenticated, isLoading, logout };
 }
 
 

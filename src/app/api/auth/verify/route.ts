@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { getAdminCollection } from "@/lib/mongodb";
 
 export async function GET(req: NextRequest) {
@@ -15,14 +15,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ authenticated: false, error: "Server misconfiguration" }, { status: 500 });
     }
 
-    let payload: any;
+    let decoded: string | JwtPayload;
     try {
-      payload = jwt.verify(token, secret);
+      decoded = jwt.verify(token, secret);
     } catch {
       return NextResponse.json({ authenticated: false, error: "Invalid token" }, { status: 401 });
     }
 
-    const { email, password } = (payload || {}) as { email?: string; password?: string };
+    const { email, password } =
+      typeof decoded === "object" && decoded
+        ? (decoded as JwtPayload)
+        : ({} as JwtPayload);
     if (!email || !password) {
       return NextResponse.json({ authenticated: false, error: "Invalid payload" }, { status: 401 });
     }
@@ -34,7 +37,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ authenticated: true });
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ authenticated: false, error: "Unexpected error" }, { status: 500 });
   }
 }

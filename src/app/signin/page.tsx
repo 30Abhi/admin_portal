@@ -54,9 +54,10 @@ export default function SignInPage() {
       localStorage.setItem("admin_jwt", token);
       localStorage.setItem("admin_jwt_exp", String(expMs));
       toast.success("Signed in successfully");
-      router.replace("/admin/dashboard");
-    } catch (err: any) {
-      setError(err?.message || "Something went wrong");
+      router.replace("/dashboard");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
     } finally {
       setLoading(false);
     }

@@ -66,7 +66,7 @@ const seed: Dermatologist[] = [
   },
 ];
 
-export const useDermStore = create<Store>((set, get) => ({
+export const useDermStore = create<Store>((set) => ({
   dermatologists: seed,
   isModalOpen: false,
   editingId: null,

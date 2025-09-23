@@ -15,7 +15,7 @@ const navItems = [
 export default function Sidebar({onItemClick }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth() as unknown as { logout: () => void };
+  const { logout } = useAuth();
 
   function handleLogout() {
     logout();

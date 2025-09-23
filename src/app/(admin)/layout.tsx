@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+// removed unused import Link
 import { ReactNode, useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Sidebar from "./_components/Sidebar";

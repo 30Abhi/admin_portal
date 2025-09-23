@@ -56,7 +56,7 @@ const seed: Product[] = [
   },
 ];
 
-export const useProductsStore = create<Store>((set, get) => ({
+export const useProductsStore = create<Store>((set) => ({
   products: seed,
   isModalOpen: false,
   editingProductId: null,
