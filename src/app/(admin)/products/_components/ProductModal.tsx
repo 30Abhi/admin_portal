@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useProductsStore, type Product } from "../_store";
+import { useProductsStore } from "../_store";
+import type { Product } from "@/types";
+
 import PillSelect from "./PillSelect";
 
 type FormState = {

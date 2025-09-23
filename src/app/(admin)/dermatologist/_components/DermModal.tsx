@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useDermStore, type Dermatologist } from "../_store";
+import { useDermStore } from "../_store";
+import type { Dermatologist } from "@/types";
 
 type FormState = {
   name: string;

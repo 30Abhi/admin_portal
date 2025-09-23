@@ -1,22 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-
-export type Product = {
-  id: string;
-  productId: string;
-  name: string;
-  company: string;
-  price: number;
-  rating: number;
-  link: string;
-  imageUrl: string;
-  category: string;
-  skinTypes: string[];
-  concernsTargeted: string[];
-  regionMarket: string;
-  keyIngredient: string;
-};
+import type { Product } from "@/types";
 
 type UiState = {
   isModalOpen: boolean;

@@ -1,20 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-
-export type Dermatologist = {
-  id: string;
-  name: string;
-  imageUrl: string;
-  clinicName: string;
-  addressCity: string;
-  addressState: string;
-  addressCountry: string;
-  qualifications: string;
-  experienceYears: number;
-  contactNumber: string;
-  couponCode: string;
-};
+import type { Dermatologist } from "@/types";
 
 type UiState = {
   isModalOpen: boolean;
