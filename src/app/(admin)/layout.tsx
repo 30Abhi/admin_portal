@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ReactNode, useState } from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Sidebar from "./_components/Sidebar";
 
 export default function AdminLayout({
@@ -11,6 +12,7 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
+    <ProtectedRoute>
     <div className="min-h-screen flex flex-col lg:grid lg:grid-cols-[240px_1fr]">
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center justify-between p-4 border-b border-black/[.08]">
@@ -59,6 +61,7 @@ export default function AdminLayout({
         {children}
       </main>
     </div>
+    </ProtectedRoute>
   );
 }
 

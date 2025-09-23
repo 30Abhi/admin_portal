@@ -5,21 +5,7 @@ import { useProductsStore } from "../_store";
 import type { Product } from "@/types";
 
 import PillSelect from "./PillSelect";
-
-type FormState = {
-  productId: string;
-  name: string;
-  company: string;
-  price: string;
-  rating: string;
-  link: string;
-  imageUrl: string;
-  category: string;
-  skinTypes: string[];
-  concernsTargeted: string[];
-  regionMarket: string;
-  keyIngredient: string;
-};
+import type { ProductFormState } from "@/types";
 
 export default function ProductModal() {
   const {
@@ -36,7 +22,7 @@ export default function ProductModal() {
     [products, editingProductId]
   );
 
-  const [form, setForm] = useState<FormState>({
+  const [form, setForm] = useState<ProductFormState>({
     productId: "",
     name: "",
     company: "",

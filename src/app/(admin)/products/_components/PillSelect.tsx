@@ -1,16 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-
-interface PillSelectProps {
-  label: string;
-  value: string[];
-  onChange: (value: string[]) => void;
-  options: string[];
-  placeholder?: string;
-  required?: boolean;
-  error?: string;
-}
+import type { PillSelectProps } from "@/types";
 
 export default function PillSelect({
   label,

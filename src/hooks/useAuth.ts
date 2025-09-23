@@ -1,0 +1,61 @@
+"use client";
+
+import { create } from "zustand";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import type { AuthState } from "@/types";
+
+
+
+const useAuthStore = create<AuthState>((set) => ({
+  // Initial states
+  isAuthenticated: false,
+  isLoading: true,
+  verifyToken: async () => {
+    try {
+      const token = localStorage.getItem("admin_jwt");
+      const expStr = localStorage.getItem("admin_jwt_exp");
+      if (!token || !expStr) {
+        set({ isAuthenticated: false, isLoading: false });
+        return;
+      }
+      const exp = parseInt(expStr, 10);
+      if (Number.isNaN(exp) || Date.now() >= exp) {
+        localStorage.removeItem("admin_jwt");
+        localStorage.removeItem("admin_jwt_exp");
+        set({ isAuthenticated: false, isLoading: false });
+        return;
+      }
+      const res = await fetch("/api/auth/verify", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      set({ isAuthenticated: !!data?.authenticated, isLoading: false });
+    } catch {
+    
+      set({ isAuthenticated: false, isLoading: false });
+    }
+  },
+  logout: () => {
+    localStorage.removeItem("admin_jwt");
+    localStorage.removeItem("admin_jwt_exp");
+    set({ isAuthenticated: false });
+  },
+}));
+
+export function useAuth() {
+  const router = useRouter();
+  const { isAuthenticated, isLoading, verifyToken } = useAuthStore();
+
+  useEffect(() => {
+    verifyToken();
+  }, [verifyToken]);
+
+  return { isAuthenticated, isLoading };
+}
+
+

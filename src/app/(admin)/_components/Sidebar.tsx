@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
+import type { SidebarProps } from "@/types";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },
@@ -10,12 +12,16 @@ const navItems = [
   { href: "/ads", label: "Ads" },
 ];
 
-interface SidebarProps {
-  onItemClick?: () => void;
-}
-
 export default function Sidebar({onItemClick }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth() as unknown as { logout: () => void };
+
+  function handleLogout() {
+    logout();
+    if (onItemClick) onItemClick();
+    router.replace("/signin");
+  }
 
   return (
     <nav className="flex flex-col gap-1">
@@ -36,6 +42,13 @@ export default function Sidebar({onItemClick }: SidebarProps) {
           </Link>
         );
       })}
+      <div className="h-px bg-black/[.08] my-3" />
+      <button
+        onClick={handleLogout}
+        className="rounded px-3 py-2 text-sm font-medium bg-red-600 text-white hover:bg-red-700 transition-colors"
+      >
+        Logout
+      </button>
     </nav>
   );
 }

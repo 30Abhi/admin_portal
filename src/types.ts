@@ -42,4 +42,61 @@ export type AdSlot = {
   order: number;
 };
 
+export type ProtectedRouteProps = {
+  children: React.ReactNode;
+};
+
+export type AuthState = {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  verifyToken: () => Promise<void>;
+  logout: () => void;
+};
+
+// Sidebar
+export type SidebarProps = {
+  onItemClick?: () => void;
+};
+
+// Product form state used in `ProductModal`
+export type ProductFormState = {
+  productId: string;
+  name: string;
+  company: string;
+  price: string;
+  rating: string;
+  link: string;
+  imageUrl: string;
+  category: string;
+  skinTypes: string[];
+  concernsTargeted: string[];
+  regionMarket: string;
+  keyIngredient: string;
+};
+
+// Dermatologist form state used in `DermModal`
+export type DermFormState = {
+  name: string;
+  imageUrl: string;
+  clinicName: string;
+  addressCity: string;
+  addressState: string;
+  addressCountry: string;
+  qualifications: string;
+  experienceYears: string;
+  contactNumber: string;
+  couponCode: string;
+};
+
+// PillSelect props
+export type PillSelectProps = {
+  label: string;
+  value: string[];
+  onChange: (value: string[]) => void;
+  options: string[];
+  placeholder?: string;
+  required?: boolean;
+  error?: string;
+};
+
 

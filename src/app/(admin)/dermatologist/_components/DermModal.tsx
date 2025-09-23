@@ -2,20 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useDermStore } from "../_store";
-import type { Dermatologist } from "@/types";
-
-type FormState = {
-  name: string;
-  imageUrl: string;
-  clinicName: string;
-  addressCity: string;
-  addressState: string;
-  addressCountry: string;
-  qualifications: string;
-  experienceYears: string;
-  contactNumber: string;
-  couponCode: string;
-};
+import type { Dermatologist, DermFormState } from "@/types";
 
 export default function DermModal() {
   const { isModalOpen, editingId, closeModal, addDerm, updateDerm, dermatologists } = useDermStore();
@@ -25,7 +12,7 @@ export default function DermModal() {
     [dermatologists, editingId]
   );
 
-  const [form, setForm] = useState<FormState>({
+  const [form, setForm] = useState<DermFormState>({
     name: "",
     imageUrl: "",
     clinicName: "",
