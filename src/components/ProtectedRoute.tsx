@@ -10,13 +10,11 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast.error("Please sign in to continue");
-      router.replace("/signin");
-    }
-  }, [isLoading, isAuthenticated, router]);
-
+  if (!isLoading && !isAuthenticated) {
+    toast.error("Please sign in to continue");
+    router.replace("/signin");
+  }
+  
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

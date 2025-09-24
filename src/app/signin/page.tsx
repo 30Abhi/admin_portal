@@ -53,7 +53,9 @@ export default function SignInPage() {
       const expMs = Date.now() + expiresIn * 1000;
       localStorage.setItem("admin_jwt", token);
       localStorage.setItem("admin_jwt_exp", String(expMs));
+
       toast.success("Signed in successfully");
+      
       router.replace("/dashboard");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";

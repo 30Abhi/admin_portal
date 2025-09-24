@@ -17,14 +17,14 @@ const useAuthStore = create<AuthState>((set) => ({
       const expStr = localStorage.getItem("admin_jwt_exp");
       if (!token || !expStr) {
         set({ isAuthenticated: false, isLoading: false });
-        return;
+        return false;
       }
       const exp = parseInt(expStr, 10);
       if (Number.isNaN(exp) || Date.now() >= exp) {
         localStorage.removeItem("admin_jwt");
         localStorage.removeItem("admin_jwt_exp");
         set({ isAuthenticated: false, isLoading: false });
-        return;
+        return false;
       }
       const res = await fetch("/api/auth/verify", {
         method: "GET",
@@ -33,10 +33,14 @@ const useAuthStore = create<AuthState>((set) => ({
         },
       });
       const data = await res.json();
-      set({ isAuthenticated: !!data?.authenticated, isLoading: false });
+      const ok = !!data?.authenticated;
+      set({ isAuthenticated: ok, isLoading: false });
+      console.log("isAuthenticated", ok);
+      console.log("isLoading", false);
+      return ok;
     } catch {
-    
       set({ isAuthenticated: false, isLoading: false });
+      return false;
     }
   },
   logout: () => {
@@ -47,7 +51,7 @@ const useAuthStore = create<AuthState>((set) => ({
 }));
 
 export function useAuth() {
-  const router = useRouter();
+  
   const { isAuthenticated, isLoading, verifyToken, logout } = useAuthStore();
 
   useEffect(() => {

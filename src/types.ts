@@ -49,7 +49,7 @@ export type ProtectedRouteProps = {
 export type AuthState = {
   isAuthenticated: boolean;
   isLoading: boolean;
-  verifyToken: () => Promise<void>;
+  verifyToken: () => Promise<boolean>;
   logout: () => void;
 };
 
