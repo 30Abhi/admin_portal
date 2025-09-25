@@ -25,7 +25,7 @@ export async function getAdminCollection(): Promise<Collection<{ email: string; 
   return db.collection<{ email: string; password: string }>("admin");
 }
 
-export type Dermotologist = {
+export type Dermatologist = {
   _id?: ObjectId;
   name: string;
   imageUrl?: string; // URL to profile image
@@ -46,9 +46,9 @@ export type Dermotologist = {
   updatedAt?: Date;
 };
 
-export async function getDermotologistCollection(): Promise<Collection<Dermotologist>> {
+export async function getDermatologistCollection(): Promise<Collection<Dermatologist>> {
   const db = await getMongoDb();
-  return db.collection<Dermotologist>("dermotologist");
+  return db.collection<Dermatologist>("dermatologist");
 }
 
 

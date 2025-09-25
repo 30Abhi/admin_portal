@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDermotologistCollection, Dermotologist } from "@/lib/mongodb";
+import { getDermatologistCollection, Dermatologist } from "@/lib/mongodb";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as Partial<Dermotologist>;
+    const body = (await req.json()) as Partial<Dermatologist>;
     const { name } = body;
     if (!name || typeof name !== "string") {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
 
     const now = new Date();
-    const doc: Dermotologist = {
+    const doc: Dermatologist = {
       name,
       imageUrl: body.imageUrl,
       clinicName: body.clinicName,
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       updatedAt: now,
     };
 
-    const collection = await getDermotologistCollection();
+    const collection = await getDermatologistCollection();
     const result = await collection.insertOne(doc);
     return NextResponse.json({ _id: result.insertedId, ...doc }, { status: 201 });
   } catch (_error) {

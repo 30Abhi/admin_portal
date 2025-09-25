@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import { getDermotologistCollection } from "@/lib/mongodb";
+import { getDermatologistCollection } from "@/lib/mongodb";
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function DELETE(req: NextRequest) {
     const objectId = (() => { try { return new ObjectId(id); } catch { return null; }})();
     if (!objectId) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
-    const collection = await getDermotologistCollection();
+    const collection = await getDermatologistCollection();
     const result = await collection.deleteOne({ _id: objectId });
     if (result.deletedCount === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ success: true });

@@ -1,11 +1,16 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo } from "react";
+import toast from "react-hot-toast";
+import { useEffect, useMemo } from "react";
 import { useDermStore } from "../_store";
 
 export default function DermTable() {
-  const { dermatologists, deleteDerm, openEdit, search } = useDermStore();
+  const { dermatologists, deleteDerm, openEdit, search, fetchDerms } = useDermStore();
+
+  useEffect(() => {
+    fetchDerms();
+  }, [fetchDerms]);
 
   const rows = useMemo(() => {
     const q = search.toLowerCase();
@@ -24,8 +29,8 @@ export default function DermTable() {
     <div className="rounded border border-black/[.08] overflow-hidden">
       {/* Desktop Table */}
       <div className="hidden lg:block">
-        <table className="w-full text-sm">
-          <thead className="text-xs text-black/60">
+        <table className="w-full text-base">
+          <thead className="text-base lg:text-lg text-black/80">
             <tr className="border-b border-black/[.06]">
               <Th>Dermatologist</Th>
               <Th>Clinic</Th>
@@ -39,10 +44,10 @@ export default function DermTable() {
           </thead>
           <tbody>
             {rows.map((d) => (
-              <tr key={d.id} className="border-b border-black/[.06] hover:bg-black/[.02]">
+              <tr key={d.id} className="border-b border-black/[.06] hover:bg-black/[.02] h-24">
                 <Td>
-                  <div className="flex items-center gap-3">
-                    <Image src={d.imageUrl || "/next.svg"} alt="" width={28} height={28} className="rounded-full" />
+                  <div className="flex items-center gap-4">
+                    <Image src={d.imageUrl || "/next.svg"} alt="" width={64} height={64} className="rounded-full object-cover" />
                     <div className="flex flex-col">
                       <span>{d.name}</span>
                     </div>
@@ -56,7 +61,14 @@ export default function DermTable() {
                 <Td>{d.couponCode}</Td>
                 <Td className="text-right pr-4">
                   <button className="mr-3" title="Edit" onClick={() => openEdit(d.id)}>✎</button>
-                  <button title="Delete" onClick={() => deleteDerm(d.id)}>🗑️</button>
+                  <button title="Delete" onClick={async () => {
+                    try {
+                      await deleteDerm(d.id);
+                      toast.success("Dermatologist deleted");
+                    } catch {
+                      toast.error("Server error. Try again.");
+                    }
+                  }}>🗑️</button>
                 </Td>
               </tr>
             ))}
@@ -67,22 +79,29 @@ export default function DermTable() {
       {/* Mobile Cards */}
       <div className="lg:hidden">
         {rows.map((d) => (
-          <div key={d.id} className="border-b border-black/[.06] p-4 hover:bg-black/[.02]">
+          <div key={d.id} className="border-b border-black/[.06] p-5 hover:bg-black/[.02] min-h-28">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <Image src={d.imageUrl || "/next.svg"} alt="" width={40} height={40} className="rounded-full" />
+              <div className="flex items-center gap-4">
+                <Image src={d.imageUrl || "/next.svg"} alt="" width={72} height={72} className="rounded-full object-cover" />
                 <div className="flex flex-col">
-                  <span className="font-medium text-sm">{d.name}</span>
-                  <span className="text-xs text-gray-500">{d.clinicName}</span>
+                  <span className="font-medium">{d.name}</span>
+                  <span className="text-sm text-gray-500">{d.clinicName}</span>
                 </div>
               </div>
               <div className="flex gap-2">
                 <button className="p-2 hover:bg-gray-100 rounded" title="Edit" onClick={() => openEdit(d.id)}>✎</button>
-                <button className="p-2 hover:bg-gray-100 rounded" title="Delete" onClick={() => deleteDerm(d.id)}>🗑️</button>
+                <button className="p-2 hover:bg-gray-100 rounded" title="Delete" onClick={async () => {
+                  try {
+                    await deleteDerm(d.id);
+                    toast.success("Dermatologist deleted");
+                  } catch {
+                    toast.error("Server error. Try again.");
+                  }
+                }}>🗑️</button>
               </div>
             </div>
             
-            <div className="space-y-2 text-xs">
+            <div className="space-y-2 text-sm">
               <div>
                 <span className="text-gray-500">Address:</span>
                 <span className="ml-1">{`${d.addressCity}, ${d.addressState}, ${d.addressCountry}`}</span>
@@ -112,7 +131,7 @@ export default function DermTable() {
 }
 
 function Th({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <th className={`text-left font-medium py-3 px-4 ${className}`}>{children}</th>;
+  return <th className={`text-left font-semibold py-4 px-5 ${className}`}>{children}</th>;
 }
 function Td({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <td className={`py-3 px-4 align-top ${className}`}>{children}</td>;

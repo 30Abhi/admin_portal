@@ -14,57 +14,15 @@ type Actions = {
   openEdit: (id: string) => void;
   closeModal: () => void;
   setSearch: (q: string) => void;
-  addDerm: (d: Omit<Dermatologist, "id">) => void;
-  updateDerm: (id: string, d: Omit<Dermatologist, "id">) => void;
-  deleteDerm: (id: string) => void;
+  fetchDerms: () => Promise<void>;
+  addDerm: (d: Omit<Dermatologist, "id">) => Promise<void>;
+  updateDerm: (id: string, d: Omit<Dermatologist, "id">) => Promise<void>;
+  deleteDerm: (id: string) => Promise<void>;
 };
 
 type Store = { dermatologists: Dermatologist[] } & UiState & Actions;
 
-const seed: Dermatologist[] = [
-  {
-    id: "1",
-    name: "Dr. Rajesh Kumar",
-    qualifications: "MBBS, MD, Dermatology",
-    imageUrl:
-      "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=150&h=150&fit=crop&crop=face",
-    clinicName: "Skin & Hair Solutions",
-    addressCity: "Bangalore",
-    addressState: "Karnataka",
-    addressCountry: "India",
-    experienceYears: 12,
-    contactNumber: "+91 98765 43211",
-    couponCode: "GLAMGUIDER25",
-  },
-  {
-    id: "2",
-    name: "Dr. Amit Singh",
-    qualifications: "MBBS, MD, Dermatology",
-    imageUrl:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    clinicName: "Skin Care Specialists",
-    addressCity: "Bangalore",
-    addressState: "Karnataka",
-    addressCountry: "India",
-    experienceYears: 10,
-    contactNumber: "+91 98765 43213",
-    couponCode: "GLAMGUIDER22",
-  },
-  {
-    id: "3",
-    name: "Dr. Meera Reddy",
-    qualifications: "MBBS, MD, Dermatology",
-    imageUrl:
-      "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=150&h=150&fit=crop&crop=face",
-    clinicName: "DermaCare Clinic",
-    addressCity: "Bangalore",
-    addressState: "Karnataka",
-    addressCountry: "India",
-    experienceYears: 18,
-    contactNumber: "+91 98765 43214",
-    couponCode: "GLAMGUIDER35",
-  },
-];
+const seed: Dermatologist[] = [];
 
 export const useDermStore = create<Store>((set) => ({
   dermatologists: seed,
@@ -75,9 +33,130 @@ export const useDermStore = create<Store>((set) => ({
   openEdit: (id) => set({ isModalOpen: true, editingId: id }),
   closeModal: () => set({ isModalOpen: false, editingId: null }),
   setSearch: (q) => set({ search: q }),
-  addDerm: (d) => set((s) => ({ dermatologists: [{ id: crypto.randomUUID(), ...d }, ...s.dermatologists] })),
-  updateDerm: (id, d) => set((s) => ({ dermatologists: s.dermatologists.map((x) => (x.id === id ? { id, ...d } : x)) })),
-  deleteDerm: (id) => set((s) => ({ dermatologists: s.dermatologists.filter((x) => x.id !== id) })),
+  fetchDerms: async () => {
+    const res = await fetch("/api/dermatologist/get", { method: "GET" });
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({} as unknown))) as { error?: string } | undefined;
+      throw new Error(err?.error || "Failed to fetch dermatologists");
+    }
+    const data = await res.json();
+    type ApiDermDoc = {
+      _id?: { toString?: () => string };
+      id?: string;
+      name?: string;
+      imageUrl?: string;
+      clinicName?: string;
+      addressCity?: string;
+      city?: string;
+      addressState?: string;
+      state?: string;
+      addressCountry?: string;
+      country?: string;
+      qualifications?: string;
+      experienceYears?: number;
+      contactNumber?: string;
+      couponCode?: string;
+    };
+    const mapped: Dermatologist[] = (data as ApiDermDoc[]).map((doc) => ({
+      id: doc._id?.toString?.() ?? doc.id ?? crypto.randomUUID(),
+      name: doc.name ?? "",
+      imageUrl: doc.imageUrl ?? "",
+      clinicName: doc.clinicName ?? "",
+      addressCity: doc.addressCity ?? doc.city ?? "",
+      addressState: doc.addressState ?? doc.state ?? "",
+      addressCountry: doc.addressCountry ?? doc.country ?? "",
+      qualifications: doc.qualifications ?? "",
+      experienceYears: Number(doc.experienceYears ?? 0),
+      contactNumber: doc.contactNumber ?? "",
+      couponCode: doc.couponCode ?? "",
+    }));
+    set({ dermatologists: mapped });
+  },
+  addDerm: async (d) => {
+    const payload = {
+      name: d.name,
+      imageUrl: d.imageUrl,
+      clinicName: d.clinicName,
+      city: d.addressCity,
+      state: d.addressState,
+      country: d.addressCountry,
+      qualifications: d.qualifications,
+      experienceYears: d.experienceYears,
+      contactNumber: d.contactNumber,
+      couponCode: d.couponCode,
+    };
+    const res = await fetch("/api/dermatologist/create", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({} as unknown))) as { error?: string } | undefined;
+      throw new Error(err?.error || "Failed to create dermatologist");
+    }
+    const doc = await res.json();
+    const mapped: Dermatologist = {
+      id: doc._id?.toString?.() ?? doc.id ?? crypto.randomUUID(),
+      name: doc.name,
+      imageUrl: doc.imageUrl ?? "",
+      clinicName: doc.clinicName ?? "",
+      addressCity: doc.addressCity ?? doc.city ?? "",
+      addressState: doc.addressState ?? doc.state ?? "",
+      addressCountry: doc.addressCountry ?? doc.country ?? "",
+      qualifications: doc.qualifications ?? "",
+      experienceYears: Number(doc.experienceYears ?? 0),
+      contactNumber: doc.contactNumber ?? "",
+      couponCode: doc.couponCode ?? "",
+    };
+    set((s) => ({ dermatologists: [mapped, ...s.dermatologists] }));
+  },
+  updateDerm: async (id, d) => {
+    const payload = {
+      id,
+      name: d.name,
+      imageUrl: d.imageUrl,
+      clinicName: d.clinicName,
+      city: d.addressCity,
+      state: d.addressState,
+      country: d.addressCountry,
+      qualifications: d.qualifications,
+      experienceYears: d.experienceYears,
+      contactNumber: d.contactNumber,
+      couponCode: d.couponCode,
+    };
+    const res = await fetch("/api/dermatologist/update", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({} as unknown))) as { error?: string } | undefined;
+      throw new Error(err?.error || "Failed to update dermatologist");
+    }
+    const doc = await res.json();
+    const mapped: Dermatologist = {
+      id: doc._id?.toString?.() ?? id,
+      name: doc.name,
+      imageUrl: doc.imageUrl ?? "",
+      clinicName: doc.clinicName ?? "",
+      addressCity: doc.addressCity ?? doc.city ?? "",
+      addressState: doc.addressState ?? doc.state ?? "",
+      addressCountry: doc.addressCountry ?? doc.country ?? "",
+      qualifications: doc.qualifications ?? "",
+      experienceYears: Number(doc.experienceYears ?? 0),
+      contactNumber: doc.contactNumber ?? "",
+      couponCode: doc.couponCode ?? "",
+    };
+    set((s) => ({ dermatologists: s.dermatologists.map((x) => (x.id === id ? mapped : x)) }));
+  },
+  deleteDerm: async (id) => {
+    const res = await fetch(`/api/dermatologist/delete?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    if (!res.ok) {
+      const err = (await res.json().catch(() => ({} as unknown))) as { error?: string } | undefined;
+      throw new Error(err?.error || "Failed to delete dermatologist");
+    }
+    set((s) => ({ dermatologists: s.dermatologists.filter((x) => x.id !== id) }));
+  },
 }));
 
 

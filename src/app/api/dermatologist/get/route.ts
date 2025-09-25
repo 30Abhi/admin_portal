@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import { getDermotologistCollection } from "@/lib/mongodb";
+import { getDermatologistCollection } from "@/lib/mongodb";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    const collection = await getDermotologistCollection();
+    const collection = await getDermatologistCollection();
     if (id) {
       const objectId = (() => { try { return new ObjectId(id); } catch { return null; }})();
       if (!objectId) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
