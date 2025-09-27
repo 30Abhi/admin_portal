@@ -51,4 +51,21 @@ export async function getDermatologistCollection(): Promise<Collection<Dermatolo
   return db.collection<Dermatologist>("dermatologist");
 }
 
+export type AdSlot = {
+  _id?: ObjectId;
+  adNumber: number; // 1-6 for the 6 specific ad slots
+  section: "questionnaire" | "loading" | "dashboard";
+  shape: "square" | "banner-wide" | "banner-medium" | "poster";
+  imageUrl?: string;
+  targetUrl?: string;
+  order: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+export async function getAdSlotCollection(): Promise<Collection<AdSlot>> {
+  const db = await getMongoDb();
+  return db.collection<AdSlot>("ads");
+}
+
 

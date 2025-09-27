@@ -1,27 +1,55 @@
 "use client";
 
-// removed unused import
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { useAdsStore } from "./_store";
+import type { AdSlot } from "@/types";
 
 type AdSlotProps = {
+  ad: AdSlot;
   label: string;
   description?: string;
-  shape: "square" | "banner-wide" | "banner-medium" | "poster";
 };
 
-function AdSlot({ label, description, shape }: AdSlotProps) {
-  const [hasFile, setHasFile] = useState<boolean>(false);
+function AdSlotComponent({ ad, label, description }: AdSlotProps) {
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const { updateAd, uploadAdImage } = useAdsStore();
 
   const handlePick = () => inputRef.current?.click();
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  
+  const onChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setHasFile(true);
+
+    setIsUploading(true);
+    try {
+      // Upload the image
+      const imageUrl = await uploadAdImage(ad.adNumber, file);
+      
+      // Update the ad with the new image URL
+      await updateAd(ad.adNumber, imageUrl, ad.targetUrl || "");
+      
+      toast.success("Image uploaded successfully");
+    } catch (error) {
+      console.error("Upload failed:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleLinkClick = () => {
+    const targetUrl = prompt("Enter target URL:", ad.targetUrl || "");
+    if (targetUrl !== null) {
+      updateAd(ad.adNumber, ad.imageUrl || "", targetUrl)
+        .then(() => toast.success("Target URL updated"))
+        .catch(() => toast.error("Failed to update target URL"));
+    }
   };
 
   const shapeClasses = (() => {
-    switch (shape) {
+    switch (ad.shape) {
       case "square":
         return "w-[200px] h-[200px]";
       case "banner-medium":
@@ -33,34 +61,63 @@ function AdSlot({ label, description, shape }: AdSlotProps) {
     }
   })();
 
+  const hasImage = Boolean(ad.imageUrl);
+  const hasTargetUrl = Boolean(ad.targetUrl);
+
   return (
     <div className="flex flex-col items-start gap-2">
       <div className="text-sm font-semibold">{label}</div>
       {description ? <div className="text-xs opacity-70 -mt-2">{description}</div> : null}
       <div className="flex flex-col items-center">
         <div className={`relative ${shapeClasses} overflow-hidden rounded-md border border-black/10 dark:border-white/20 bg-neutral-200`}>
-          <div className="absolute inset-0 grid place-items-center text-xs text-black/60 dark:text-white/70">
-            <div className="flex flex-col items-center gap-1">
-              <span className="opacity-80" style={{color: hasFile ? "#000" : "#666"}}>{hasFile ? "Creative selected" : "No creative uploaded"}</span>
-              <span className="opacity-60">{shape.replace("-", " ")}</span>
+          {hasImage ? (
+            <img 
+              src={ad.imageUrl} 
+              alt={`Ad ${ad.adNumber}`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 grid place-items-center text-xs text-black/60 dark:text-white/70">
+              <div className="flex flex-col items-center gap-1">
+                <span className="opacity-80" style={{color: hasImage ? "#000" : "#666"}}>
+                  {isUploading ? "Uploading..." : hasImage ? "Creative uploaded" : "No creative uploaded"}
+                </span>
+                <span className="opacity-60">{ad.shape.replace("-", " ")}</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
-        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onChange} />
+        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onChange} disabled={isUploading} />
         <div className="mt-3 flex items-center justify-center gap-2">
-          <IconButton onClick={handlePick} label="Upload">
+          <IconButton onClick={handlePick} label="Upload" disabled={isUploading}>
             <UploadIcon className="h-4 w-4" />
           </IconButton>
-          <IconButton onClick={() => {}} label="Link">
+          <IconButton onClick={handleLinkClick} label="Link" disabled={isUploading}>
             <LinkIcon className="h-4 w-4" />
           </IconButton>
         </div>
+        {hasTargetUrl && (
+          <div className="mt-2 text-xs text-green-600">
+            ✓ Target URL set
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
 export default function AdsPage() {
+  const { ads, fetchAds } = useAdsStore();
+
+  useEffect(() => {
+    fetchAds();
+  }, [fetchAds]);
+
+  // Get ads by section
+  const questionnaireAds = ads.filter(ad => ad.section === "questionnaire");
+  const loadingAds = ads.filter(ad => ad.section === "loading");
+  const dashboardAds = ads.filter(ad => ad.section === "dashboard");
+
   return (
     <div className="flex flex-col gap-6 lg:gap-8 max-w-[1100px] mx-auto px-4 sm:px-6">
       <h1 className="text-xl lg:text-2xl font-semibold">Ads Management</h1>
@@ -69,9 +126,13 @@ export default function AdsPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Questionnaire</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-          <AdSlot label="Questionnaire - Slot A" shape="square" />
-          <AdSlot label="Questionnaire - Slot B" shape="square" />
-          <AdSlot label="Questionnaire - Slot C" shape="square" />
+          {questionnaireAds.map((ad) => (
+            <AdSlotComponent 
+              key={ad.adNumber}
+              ad={ad}
+              label={`Questionnaire - Slot ${String.fromCharCode(64 + ad.adNumber)}`}
+            />
+          ))}
         </div>
       </section>
 
@@ -79,8 +140,13 @@ export default function AdsPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Loading page</h2>
         <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-10 items-start">
-          <AdSlot label="Loading - Side" shape="poster" />
-          <AdSlot label="Loading - Banner" shape="banner-medium" />
+          {loadingAds.map((ad) => (
+            <AdSlotComponent 
+              key={ad.adNumber}
+              ad={ad}
+              label={ad.shape === "poster" ? "Loading - Side" : "Loading - Banner"}
+            />
+          ))}
         </div>
       </section>
 
@@ -88,7 +154,13 @@ export default function AdsPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Dashboard</h2>
         <div className="flex flex-wrap items-start gap-8">
-          <AdSlot label="Dashboard - Hero Banner" shape="banner-wide" />
+          {dashboardAds.map((ad) => (
+            <AdSlotComponent 
+              key={ad.adNumber}
+              ad={ad}
+              label="Dashboard - Hero Banner"
+            />
+          ))}
         </div>
       </section>
     </div>
@@ -114,9 +186,22 @@ function LinkIcon({ className }: { className?: string }) {
   );
 }
 
-function IconButton({ children, onClick, label }: { children: React.ReactNode; onClick: () => void; label: string }) {
+function IconButton({ children, onClick, label, disabled = false }: { 
+  children: React.ReactNode; 
+  onClick: () => void; 
+  label: string;
+  disabled?: boolean;
+}) {
   return (
-    <button onClick={onClick} aria-label={label} title={label} className="inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-2.5 py-1.5 text-xs shadow-sm hover:bg-neutral-100 dark:border-black/10 dark:bg-white dark:hover:bg-neutral-100">
+    <button 
+      onClick={onClick} 
+      aria-label={label} 
+      title={label} 
+      disabled={disabled}
+      className={`inline-flex items-center justify-center rounded-md border border-black/10 bg-white px-2.5 py-1.5 text-xs shadow-sm hover:bg-neutral-100 dark:border-black/10 dark:bg-white dark:hover:bg-neutral-100 ${
+        disabled ? 'opacity-50 cursor-not-allowed' : ''
+      }`}
+    >
       {children}
     </button>
   );

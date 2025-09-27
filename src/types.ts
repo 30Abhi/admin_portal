@@ -30,16 +30,26 @@ export type Product = {
   keyIngredient: string;
 };
 
-// Optional: basic ad slot types for future backend integration
+// Ad slot types for backend integration
 export type AdSlotShape = "square" | "banner-wide" | "banner-medium" | "poster";
 
 export type AdSlot = {
   id: string;
+  adNumber: number; // 1-6 for the 6 specific ad slots
   section: "questionnaire" | "loading" | "dashboard";
   shape: AdSlotShape;
   imageUrl?: string;
   targetUrl?: string;
   order: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+// Form state for ad management
+export type AdFormState = {
+  adNumber: number;
+  imageUrl: string;
+  targetUrl: string;
 };
 
 export type ProtectedRouteProps = {
