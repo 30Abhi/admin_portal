@@ -47,7 +47,16 @@ Ads are stored in MongoDB with the following structure:
 
 ## File Storage
 
-Uploaded images are stored in `public/uploads/ads/` with the naming convention:
+In production (Vercel), images are uploaded to AWS S3 for persistence and global availability. Files are stored under the key prefix `ads/` with the naming convention:
 `ad-{adNumber}-{timestamp}.{extension}`
 
-Example: `ad-1-1695834567890.jpg`
+Example: `ads/ad-1-1695834567890.jpg`
+
+The upload API returns a stable public URL in the format:
+`https://<AWS_S3_BUCKET_NAME>.s3.<AWS_REGION>.amazonaws.com/ads/<filename>`
+
+Environment variables required:
+- `AWS_REGION`
+- `AWS_S3_BUCKET_NAME`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`

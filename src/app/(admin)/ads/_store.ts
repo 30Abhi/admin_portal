@@ -168,7 +168,8 @@ export const useAdsStore = create<Store>((set) => ({
       }
       
       const result = await res.json();
-      return result.imageUrl;
+      // Support both dermatologist-style (url) and legacy (imageUrl)
+      return result.url || result.imageUrl;
     } catch (error) {
       console.error("Failed to upload image:", error);
       throw error;

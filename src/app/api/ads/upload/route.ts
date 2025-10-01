@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
+import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION!,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
 
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const adNumber = formData.get("adNumber") as string;
+    const file = formData.get("file") as File | null;
+    const adNumber = formData.get("adNumber") as string | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -17,44 +24,43 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Valid adNumber (1-6) is required" }, { status: 400 });
     }
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
+    if (!file.type?.startsWith("image/")) {
       return NextResponse.json({ error: "Only image files are allowed" }, { status: 400 });
     }
 
-    // Validate file size (max 5MB)
     const maxSize = 5 * 1024 * 1024; // 5MB
     if (file.size > maxSize) {
       return NextResponse.json({ error: "File size must be less than 5MB" }, { status: 400 });
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = join(process.cwd(), "public", "uploads", "ads");
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true });
-    }
-
-    // Generate unique filename
     const timestamp = Date.now();
-    const fileExtension = file.name.split('.').pop() || 'jpg';
+    const fileName = file.name || "upload";
+    const fileExtension = fileName.split(".").pop() || "jpg";
+    const contentType = file.type || "image/jpeg";
+
     const filename = `ad-${adNumber}-${timestamp}.${fileExtension}`;
-    const filepath = join(uploadsDir, filename);
+    const key = `ads/${filename}`;
 
-    // Write file to disk
-    await writeFile(filepath, buffer);
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Return the public URL
-    const imageUrl = `/uploads/ads/${filename}`;
-    
-    return NextResponse.json({ 
-      success: true, 
-      imageUrl,
-      filename 
+    const putCommand = new PutObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME!,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
     });
 
+    await s3Client.send(putCommand);
+
+    // Create a pre-signed GET URL (same behavior as dermatologist)
+    const getCommand = new GetObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME!,
+      Key: key,
+    });
+    const url = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
+
+    // Return both for compatibility
+    return NextResponse.json({ success: true, url, imageUrl: url, key, filename });
   } catch (error) {
     console.error("Failed to upload file:", error);
     return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
