@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({ authenticated: true });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ authenticated: false, error: "Unexpected error" }, { status: 500 });
   }
 }

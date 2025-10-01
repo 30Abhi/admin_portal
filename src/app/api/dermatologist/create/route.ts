@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const collection = await getDermatologistCollection();
     const result = await collection.insertOne(doc);
     return NextResponse.json({ _id: result.insertedId, ...doc }, { status: 201 });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: "Failed to create dermatologist" }, { status: 500 });
   }
 }

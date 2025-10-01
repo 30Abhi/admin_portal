@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { ProtectedRouteProps } from "@/types";
 
@@ -10,10 +9,14 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
-  if (!isLoading && !isAuthenticated) {
-    toast.error("Please sign in to continue");
-    router.replace("/signin");
-  }
+  useEffect(() => {
+    console.log("isAuthenticated protected route", isAuthenticated);
+    console.log("isLoading protected route", isLoading);
+    if (!isLoading && !isAuthenticated) {
+      
+      router.replace("/signin");
+    }
+  }, [isLoading, isAuthenticated, router]);
   
   if (isLoading) {
     return (

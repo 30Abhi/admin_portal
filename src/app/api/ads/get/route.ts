@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getAdSlotCollection } from "@/lib/mongodb";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const collection = await getAdSlotCollection();
     const ads = await collection.find({}).sort({ adNumber: 1 }).toArray();

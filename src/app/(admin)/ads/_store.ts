@@ -78,7 +78,7 @@ const defaultAdSlots: AdSlot[] = [
   },
 ];
 
-export const useAdsStore = create<Store>((set, get) => ({
+export const useAdsStore = create<Store>((set) => ({
   ads: defaultAdSlots,
   isModalOpen: false,
   editingAdNumber: null,
@@ -97,7 +97,7 @@ export const useAdsStore = create<Store>((set, get) => ({
       const data = await res.json();
       
       // Map API data to frontend format
-      const mappedAds: AdSlot[] = data.map((doc: any) => ({
+      const mappedAds: AdSlot[] = data.map((doc: Record<string, unknown>) => ({
         id: doc._id?.toString?.() ?? doc.id ?? crypto.randomUUID(),
         adNumber: doc.adNumber,
         section: doc.section,

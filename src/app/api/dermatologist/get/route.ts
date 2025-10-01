@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     }
     const all = await collection.find({}).sort({ createdAt: -1 }).toArray();
     return NextResponse.json(all);
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch dermatologists" }, { status: 500 });
   }
 }

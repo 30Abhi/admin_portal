@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     const token = jwt.sign({ email, password }, secret, { expiresIn: expiresInSeconds });
 
     return NextResponse.json({ token, expiresIn: expiresInSeconds });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: "Unexpected error" }, { status: 500 });
   }
 }

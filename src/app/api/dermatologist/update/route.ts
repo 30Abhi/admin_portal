@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     }
 
-    const { id: _omit, _id: _omit2, ...rest } = body as Record<string, unknown>;
+    const { _id: _, ...rest } = body as Record<string, unknown>;
     const update: Partial<Dermatologist> = { ...(rest as Partial<Dermatologist>), updatedAt: new Date() };
 
     const collection = await getDermatologistCollection();
@@ -22,7 +22,7 @@ export async function PATCH(req: NextRequest) {
     const updated = await collection.findOne({ _id: objectId });
     if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(updated);
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: "Failed to update dermatologist" }, { status: 500 });
   }
 }

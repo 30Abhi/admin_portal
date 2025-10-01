@@ -18,6 +18,9 @@ export default function SignInPage() {
     if (!isLoading && isAuthenticated) {
       router.replace("/dashboard");
     }
+    else{
+      toast.error("Please sign in to continue");
+    }
   }, [isLoading, isAuthenticated, router]);
 
   if (isLoading) {

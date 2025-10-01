@@ -2,8 +2,10 @@
 
 import { useRef, useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import Image from "next/image";
 import { useAdsStore } from "./_store";
 import type { AdSlot } from "@/types";
+import { LinkIcon } from "lucide-react";
 
 type AdSlotProps = {
   ad: AdSlot;
@@ -13,6 +15,7 @@ type AdSlotProps = {
 
 function AdSlotComponent({ ad, label, description }: AdSlotProps) {
   const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [showImageModal, setShowImageModal] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { updateAd, uploadAdImage } = useAdsStore();
 
@@ -40,24 +43,23 @@ function AdSlotComponent({ ad, label, description }: AdSlotProps) {
   };
 
   const handleLinkClick = () => {
-    const targetUrl = prompt("Enter target URL:", ad.targetUrl || "");
-    if (targetUrl !== null) {
-      updateAd(ad.adNumber, ad.imageUrl || "", targetUrl)
-        .then(() => toast.success("Target URL updated"))
-        .catch(() => toast.error("Failed to update target URL"));
+    if (ad.imageUrl) {
+      setShowImageModal(true);
+    } else {
+      toast.error("No image uploaded yet");
     }
   };
 
   const shapeClasses = (() => {
     switch (ad.shape) {
       case "square":
-        return "w-[200px] h-[200px]";
+        return "w-[200px] h-[200px] sm:w-[180px] sm:h-[180px]";
       case "banner-medium":
-        return "w-[520px] h-[160px]"; // medium banner
+        return "w-[320px] h-[100px] sm:w-[420px] sm:h-[130px] lg:w-[520px] lg:h-[160px]"; // responsive medium banner
       case "banner-wide":
-        return "w-[920px] h-[260px]"; // wide banner
+        return "w-[320px] h-[90px] sm:w-[520px] sm:h-[150px] lg:w-[720px] lg:h-[200px] xl:w-[920px] xl:h-[260px]"; // responsive wide banner
       case "poster":
-        return "w-[260px] h-[200px]"; // poster
+        return "w-[200px] h-[150px] sm:w-[240px] sm:h-[180px] lg:w-[260px] lg:h-[200px]"; // responsive poster
     }
   })();
 
@@ -71,10 +73,12 @@ function AdSlotComponent({ ad, label, description }: AdSlotProps) {
       <div className="flex flex-col items-center">
         <div className={`relative ${shapeClasses} overflow-hidden rounded-md border border-black/10 dark:border-white/20 bg-neutral-200`}>
           {hasImage ? (
-            <img 
-              src={ad.imageUrl} 
+            <Image 
+              src={ad.imageUrl!} 
               alt={`Ad ${ad.adNumber}`}
-              className="w-full h-full object-cover"
+              fill
+              className="object-contain bg-white dark:bg-gray-100"
+              sizes="(max-width: 640px) 200px, (max-width: 1024px) 300px, 400px"
             />
           ) : (
             <div className="absolute inset-0 grid place-items-center text-xs text-black/60 dark:text-white/70">
@@ -92,8 +96,8 @@ function AdSlotComponent({ ad, label, description }: AdSlotProps) {
           <IconButton onClick={handlePick} label="Upload" disabled={isUploading}>
             <UploadIcon className="h-4 w-4" />
           </IconButton>
-          <IconButton onClick={handleLinkClick} label="Link" disabled={isUploading}>
-            <LinkIcon className="h-4 w-4" />
+          <IconButton onClick={handleLinkClick} label="Link" disabled={isUploading || !hasImage}>
+            <LinkIcon  className="h-4 w-4" />
           </IconButton>
         </div>
         {hasTargetUrl && (
@@ -101,6 +105,53 @@ function AdSlotComponent({ ad, label, description }: AdSlotProps) {
             ✓ Target URL set
           </div>
         )}
+      </div>
+      
+      {/* Image Modal */}
+      {showImageModal && (
+        <ImageModal 
+          imageUrl={ad.imageUrl!} 
+          onClose={() => setShowImageModal(false)}
+          label={label}
+        />
+      )}
+    </div>
+  );
+}
+
+function ImageModal({ imageUrl, onClose, label }: { 
+  imageUrl: string; 
+  onClose: () => void; 
+  label: string; 
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="relative max-w-[90vw] max-h-[90vh] bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {label} - Preview
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            aria-label="Close modal"
+          >
+            <CloseIcon className="h-6 w-6" />
+          </button>
+        </div>
+        
+        {/* Image */}
+        <div className="p-4 relative">
+          <Image
+            src={imageUrl}
+            alt={`${label} preview`}
+            width={800}
+            height={600}
+            className="max-w-full max-h-[70vh] object-contain rounded-md"
+            sizes="(max-width: 768px) 100vw, 80vw"
+          />
+        </div>
       </div>
     </div>
   );
@@ -125,7 +176,7 @@ export default function AdsPage() {
       {/* Questionnaire row: three square tiles */}
       <section className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Questionnaire</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 justify-items-center">
           {questionnaireAds.map((ad) => (
             <AdSlotComponent 
               key={ad.adNumber}
@@ -139,7 +190,7 @@ export default function AdsPage() {
       {/* Loading page row: one small poster and one medium banner */}
       <section className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Loading page</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-6 lg:gap-8 items-start justify-items-center lg:justify-items-start">
           {loadingAds.map((ad) => (
             <AdSlotComponent 
               key={ad.adNumber}
@@ -153,7 +204,7 @@ export default function AdsPage() {
       {/* Dashboard row: one very wide banner */}
       <section className="flex flex-col gap-3">
         <h2 className="text-base font-semibold">Dashboard</h2>
-        <div className="flex flex-wrap items-start gap-8">
+        <div className="flex flex-wrap items-start gap-6 lg:gap-8 justify-center lg:justify-start">
           {dashboardAds.map((ad) => (
             <AdSlotComponent 
               key={ad.adNumber}
@@ -177,11 +228,12 @@ function UploadIcon({ className }: { className?: string }) {
   );
 }
 
-function LinkIcon({ className }: { className?: string }) {
+
+function CloseIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M10 13a5 5 0 0 0 7.07 0l3.54-3.54a5 5 0 0 0-7.07-7.07L11 4" />
-      <path d="M14 11a5 5 0 0 0-7.07 0L3.39 14.54a5 5 0 0 0 7.07 7.07L13 20" />
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
   );
 }

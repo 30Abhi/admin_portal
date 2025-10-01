@@ -2,7 +2,6 @@
 
 import { create } from "zustand";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import type { AuthState } from "@/types";
 
 
@@ -58,7 +57,7 @@ export function useAuth() {
     verifyToken();
   }, [verifyToken]);
 
-  return { isAuthenticated, isLoading, logout };
+  return { isAuthenticated, isLoading, logout,verifyToken };
 }
 
 

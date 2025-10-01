@@ -14,7 +14,7 @@ export async function DELETE(req: NextRequest) {
     const result = await collection.deleteOne({ _id: objectId });
     if (result.deletedCount === 0) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ success: true });
-  } catch (_error) {
+  } catch {
     return NextResponse.json({ error: "Failed to delete dermatologist" }, { status: 500 });
   }
 }
