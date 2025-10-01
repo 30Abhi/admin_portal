@@ -42,11 +42,34 @@ function AdSlotComponent({ ad, label, description }: AdSlotProps) {
     }
   };
 
-  const handleLinkClick = () => {
-    if (ad.imageUrl) {
-      setShowImageModal(true);
-    } else {
+  const handleLinkClick = async () => {
+    if (!ad.imageUrl) {
       toast.error("No image uploaded yet");
+      return;
+    }
+    const current = ad.targetUrl || "";
+    const input = window.prompt("Enter target URL (include https://)", current);
+    if (input === null) return; // user cancelled
+    const trimmed = input.trim();
+    try {
+      if (trimmed.length > 0) {
+        // Validate URL
+        // new URL will throw if invalid
+        // Allow http and https
+        const url = new URL(trimmed);
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+          toast.error("URL must start with http or https");
+          return;
+        }
+        await updateAd(ad.adNumber, ad.imageUrl!, trimmed);
+        toast.success("Link updated");
+      } else {
+        // Clear link
+        await updateAd(ad.adNumber, ad.imageUrl!, "");
+        toast.success("Link cleared");
+      }
+    } catch (e) {
+      toast.error("Invalid URL");
     }
   };
 
