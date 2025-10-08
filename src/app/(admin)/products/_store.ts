@@ -38,9 +38,24 @@ export const useProductsStore = create<Store>((set) => ({
   fetchProducts: async () => {
     const res = await fetch("/api/product/get", { method: "GET" });
     if (!res.ok) return;
-    const data = await res.json();
-    const mapped: Product[] = (data || []).map((doc: any) => ({
-      id: doc._id?.toString?.() ?? doc.id,
+    type ProductApiDoc = {
+      _id?: { toString?: () => string } | string;
+      productId: string;
+      name: string;
+      company: string;
+      price: number;
+      rating: number;
+      link: string;
+      imageUrl: string;
+      category: string;
+      skinTypes?: string[];
+      concernsTargeted?: string[];
+      regionMarket: string;
+      keyIngredient: string;
+    };
+    const data: ProductApiDoc[] = await res.json();
+    const mapped: Product[] = (data || []).map((doc) => ({
+      id: (typeof doc._id === "string" ? doc._id : doc._id?.toString?.()) ?? crypto.randomUUID(),
       productId: doc.productId,
       name: doc.name,
       company: doc.company,
@@ -73,7 +88,7 @@ export const useProductsStore = create<Store>((set) => ({
       body: JSON.stringify({ id, ...p }),
     });
     if (!res.ok) throw new Error("Failed to update product");
-    const updated = await res.json();
+    await res.json();
     set((s) => ({ products: s.products.map((x) => (x.id === id ? { id, ...p } : x)) }));
   },
   deleteProduct: async (id) => {

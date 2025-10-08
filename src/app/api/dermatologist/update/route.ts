@@ -14,7 +14,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     }
 
-    const { _id: _, ...rest } = body as Record<string, unknown>;
+    const { _id, ...rest } = body as Record<string, unknown>;
     const update: Partial<Dermatologist> = { ...(rest as Partial<Dermatologist>), updatedAt: new Date() };
 
     const collection = await getDermatologistCollection();

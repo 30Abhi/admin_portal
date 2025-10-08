@@ -68,7 +68,7 @@ function AdSlotComponent({ ad, label, description }: AdSlotProps) {
         await updateAd(ad.adNumber, ad.imageUrl!, "");
         toast.success("Link cleared");
       }
-    } catch (e) {
+    } catch {
       toast.error("Invalid URL");
     }
   };
