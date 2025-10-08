@@ -68,4 +68,27 @@ export async function getAdSlotCollection(): Promise<Collection<AdSlot>> {
   return db.collection<AdSlot>("ads");
 }
 
+// Product collection and types
+export type ProductDoc = {
+  _id?: ObjectId;
+  productId: string;
+  name: string;
+  company: string;
+  price: number;
+  rating: number;
+  link: string;
+  imageUrl: string;
+  category: string;
+  skinTypes: string[];
+  concernsTargeted: string[];
+  regionMarket: string;
+  keyIngredient: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+export async function getProductCollection(): Promise<Collection<ProductDoc>> {
+  const db = await getMongoDb();
+  return db.collection<ProductDoc>("products");
+}
 

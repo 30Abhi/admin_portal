@@ -2,10 +2,15 @@
 
 import ProductModal from "./_components/ProductModal";
 import ProductsTable from "./_components/ProductsTable";
+import { useEffect } from "react";
 import { useProductsStore } from "./_store";
 
 export default function ProductsPage() {
-  const { openCreate, setSearch, search } = useProductsStore();
+  const { openCreate, setSearch, search, fetchProducts } = useProductsStore();
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
   return (
     <div className="flex flex-col gap-4 lg:gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
