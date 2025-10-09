@@ -53,7 +53,8 @@ export default function ProductModal() {
         regionMarket: editingProduct.regionMarket,
         keyIngredient: editingProduct.keyIngredient,
       });
-    } else {
+    } else if (isModalOpen) {
+      // Reset to empty when opening in create mode
       setForm({
         productId: "",
         name: "",
@@ -69,7 +70,7 @@ export default function ProductModal() {
         keyIngredient: "",
       });
     }
-  }, [editingProduct]);
+  }, [editingProduct, isModalOpen]);
 
   if (!isModalOpen) return null;
 
