@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useMemo } from "react";
 import { useProductsStore } from "../_store";
 
@@ -51,7 +50,7 @@ export default function ProductsTable() {
                 <Td>{p.productId}</Td>
                 <Td>
                   <div className="flex items-center gap-3">
-                    <Image src={p.imageUrl || "/next.svg"} alt="" width={28} height={28} className="rounded" />
+                    <img src={p.imageUrl || "/next.svg"} alt="" width={28} height={28} className="rounded" />
                     <div className="flex flex-col">
                       <span>{p.name}</span>
                       <a href={p.link} target="_blank" className="text-xs text-[#6c47ff] underline opacity-80">View</a>
@@ -97,7 +96,7 @@ export default function ProductsTable() {
           <div key={p.id} className="border-b border-black/[.06] p-4 hover:bg-black/[.02]">
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <Image src={p.imageUrl || "/next.svg"} alt="" width={40} height={40} className="rounded" />
+              <img src={p.imageUrl || "/next.svg"} alt="" width={40} height={40} className="rounded" />
                 <div className="flex flex-col">
                   <span className="font-medium text-sm">{p.name}</span>
                   <span className="text-xs text-gray-500">ID: {p.productId}</span>
