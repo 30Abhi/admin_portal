@@ -121,24 +121,71 @@ export default function ProductModal() {
           <Input label="Product ID *" value={form.productId} onChange={(v) => setForm({ ...form, productId: v })} />
           <Input label="Product Name *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
           <Input label="Brand" value={form.company} onChange={(v) => setForm({ ...form, company: v })} />
-          <Input label="Price" value={form.price} onChange={(v) => setForm({ ...form, price: v })} type="number" step="0.01" />
+          <Input label="Price" value={form.price} onChange={(v) => setForm({ ...form, price: v })} type="number" step="0.01" required={false} />
           <Input label="Key ingredients" value={form.keyIngredient} onChange={(v) => setForm({ ...form, keyIngredient: v })} />
           <Input label="Region market" value={form.regionMarket} onChange={(v) => setForm({ ...form, regionMarket: v })} />
           <Input label="Rating" value={form.rating} onChange={(v) => setForm({ ...form, rating: v })} type="number" step="0.1" />
           <Input label="Link" value={form.link} onChange={(v) => setForm({ ...form, link: v })} />
-          <Input label="Product image URL" value={form.imageUrl} onChange={(v) => setForm({ ...form, imageUrl: v })} />
-          <Input label="Category" value={form.category} onChange={(v) => setForm({ ...form, category: v })} />
+          <Input label="Product image URL" value={form.imageUrl} onChange={(v) => setForm({ ...form, imageUrl: v })} required={false} />
+
+          {/* Category quick-select chips (single-select) */}
+          <div className="flex flex-col gap-2">
+            <span className="text-sm opacity-70">Category</span>
+            <div className="flex flex-wrap gap-1">
+              {[
+                "Cleanser",
+                "Moisturizer",
+                "Serum",
+                "Sunscreen",
+                "Toner",
+              ].map((option) => {
+                const selected = form.category === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setForm({ ...form, category: option })}
+                    className={`px-2 py-1 text-xs rounded-full border ${
+                      selected
+                        ? "border-blue-500 bg-blue-50 text-blue-700"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4">
           <PillSelect
             label="Concerns Targeted *"
             value={form.concernsTargeted}
-            onChange={(v) => setForm({ ...form, concernsTargeted: v })}
-            options={["dryness", "dehydration", "fine lines", "acne", "oily skin", "sensitivity", "dark spots", "wrinkles"]}
+            onChange={(v) => {
+              const next = v.slice(0, 4);
+              setForm({ ...form, concernsTargeted: next });
+            }}
+            options={[
+              "Wrinkles",
+              "Fine Lines",
+              "Acne",
+              "Hyperpigmentation (Dark Spots)",
+              "Oily Skin",
+              "Dryness",
+              "Dehydration",
+              "Redness",
+              "Sensitivity",
+              "Uneven Texture",
+            ]}
             placeholder="Type and press Enter to add"
             required
-            error={form.concernsTargeted?.length === 0 ? "Please select at least one concern" : ""}
+            error={
+              form.concernsTargeted.length === 0
+                ? "Please select at least one concern (max 4)"
+                : ""
+            }
           />
           
           <PillSelect
@@ -149,6 +196,7 @@ export default function ProductModal() {
             placeholder="Type and press Enter to add"
             required
           />
+
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
@@ -160,7 +208,7 @@ export default function ProductModal() {
   );
 }
 
-function Input({ label, value, onChange, type = "text", step }: { label: string; value: string; onChange: (v: string) => void; type?: string; step?: string; }) {
+function Input({ label, value, onChange, type = "text", step, required }: { label: string; value: string; onChange: (v: string) => void; type?: string; step?: string; required?: boolean; }) {
   return (
     <label className="flex flex-col gap-1 text-sm">
       <span className="opacity-70">{label}</span>
@@ -170,7 +218,7 @@ function Input({ label, value, onChange, type = "text", step }: { label: string;
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="h-9 rounded border border-black/[.08] px-3 outline-none focus:ring-2 focus:ring-[#6c47ff]/30"
-        required={label !== "Product image URL"}
+        required={required ?? (label !== "Product image URL")}
       />
     </label>
   );
