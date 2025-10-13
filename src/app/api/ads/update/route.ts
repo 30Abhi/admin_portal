@@ -4,7 +4,7 @@ import { getAdSlotCollection, AdSlot } from "@/lib/mongodb";
 export async function PATCH(req: NextRequest) {
   try {
     const body = (await req.json()) as Partial<AdSlot> & { adNumber: number };
-    const { adNumber, imageUrl, targetUrl } = body;
+    const { adNumber, imageUrl, targetUrl, countclick } = body;
 
     if (!adNumber || (adNumber < 1 || adNumber > 6)) {
       return NextResponse.json({ error: "Valid adNumber (1-6) is required" }, { status: 400 });
@@ -24,6 +24,7 @@ export async function PATCH(req: NextRequest) {
       
       if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
       if (targetUrl !== undefined) updateData.targetUrl = targetUrl;
+      if (countclick !== undefined) updateData.countclick = countclick;
 
       const result = await collection.updateOne(
         { adNumber },
@@ -45,6 +46,7 @@ export async function PATCH(req: NextRequest) {
         order: adNumber,
         imageUrl: imageUrl || "",
         targetUrl: targetUrl || "",
+        countclick: countclick || 0,
         createdAt: now,
         updatedAt: now,
       };

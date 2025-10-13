@@ -105,6 +105,7 @@ export const useAdsStore = create<Store>((set) => ({
         imageUrl: doc.imageUrl || "",
         targetUrl: doc.targetUrl || "",
         order: doc.order,
+        countclick: doc.countclick || 0,
         createdAt: doc.createdAt,
         updatedAt: doc.updatedAt,
       }));

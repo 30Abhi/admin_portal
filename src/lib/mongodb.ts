@@ -59,6 +59,7 @@ export type AdSlot = {
   imageUrl?: string;
   targetUrl?: string;
   order: number;
+  countclick?: number; // New field for tracking click counts
   createdAt?: Date;
   updatedAt?: Date;
 };
