@@ -88,6 +88,11 @@ export type ProductDoc = {
   updatedAt?: Date;
 };
 
+export async function getUsersCollection(): Promise<Collection<Document>> {
+  const db = await getMongoDb();
+  return db.collection("users");
+}
+
 export async function getProductCollection(): Promise<Collection<ProductDoc>> {
   const db = await getMongoDb();
   return db.collection<ProductDoc>("products");

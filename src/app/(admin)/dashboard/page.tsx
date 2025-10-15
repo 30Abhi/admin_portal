@@ -16,6 +16,8 @@ const adPlacementNames: Record<number, string> = {
 export default function DashboardPage() {
   const [ads, setAds] = useState<AdSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [userCount, setUserCount] = useState<number>(0);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
 
   useEffect(() => {
     const fetchAds = async () => {
@@ -33,7 +35,23 @@ export default function DashboardPage() {
       }
     };
 
+    const fetchUserCount = async () => {
+      try {
+        const response = await fetch("/api/users/count");
+        if (!response.ok) {
+          throw new Error("Failed to fetch user count");
+        }
+        const data = await response.json();
+        setUserCount(data.count);
+      } catch (error) {
+        console.error("Error fetching user count:", error);
+      } finally {
+        setIsLoadingUsers(false);
+      }
+    };
+
     fetchAds();
+    fetchUserCount();
   }, []);
 
   // Create adRows from fetched ads data
@@ -79,7 +97,9 @@ export default function DashboardPage() {
 
         <aside className="rounded border border-black/[.08] p-4 flex flex-col items-start">
           <span className="text-sm opacity-70">Total users</span>
-          <span className="text-2xl lg:text-3xl font-semibold">4,862</span>
+          <span className="text-2xl lg:text-3xl font-semibold">
+            {isLoadingUsers ? "Loading..." : userCount.toLocaleString()}
+          </span>
         </aside>
       </div>
 
