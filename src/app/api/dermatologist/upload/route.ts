@@ -47,9 +47,8 @@ export async function POST(request: NextRequest) {
       Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: key,
     });
-
-    const signedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
-
+    
+    const signedUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 604800 });
     return NextResponse.json({ url: signedUrl, key });
     
   } catch (error) {

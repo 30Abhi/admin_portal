@@ -1,15 +1,47 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { TopSkinConcernsChart, SkinTypeDistributionChart } from "./_components/Charts";
+import type { AdSlot } from "@/types";
 
-const adRows = [
-  { placement: "Homepage banner", clicks: 1290 },
-  { placement: "Dashboard banner", clicks: 1500 },
-  { placement: "Analytics loading banner", clicks: 800 },
-  { placement: "Quiz 01", clicks: 720 },
-];
+const adPlacementNames: Record<number, string> = {
+  1: "Questionnaire A",
+  2: "Questionnaire B", 
+  3: "Questionnaire C",
+  4: "Loading Screen Top",
+  5: "Loading Screen Bottom",
+  6: "Analytics Page",
+};
 
 export default function DashboardPage() {
+  const [ads, setAds] = useState<AdSlot[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        const response = await fetch("/api/ads/get");
+        if (!response.ok) {
+          throw new Error("Failed to fetch ads");
+        }
+        const adsData = await response.json();
+        setAds(adsData);
+      } catch (error) {
+        console.error("Error fetching ads:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAds();
+  }, []);
+
+  // Create adRows from fetched ads data
+  const adRows = ads.map(ad => ({
+    placement: adPlacementNames[ad.adNumber] || `Ad ${ad.adNumber}`,
+    clicks: ad.countclick || 0,
+  }));
+
   return (
     <div className="flex flex-col gap-6 lg:gap-8">
       <h1 className="text-xl lg:text-2xl font-semibold">Admin Dashboard</h1>
@@ -26,12 +58,20 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {adRows.map((r) => (
-                  <tr key={r.placement} className="border-b border-black/[.06]">
-                    <td className="py-3 px-2">{r.placement}</td>
-                    <td className="py-3 px-2 text-right">{r.clicks}</td>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={2} className="py-3 px-2 text-center text-gray-500">
+                      Loading ad data...
+                    </td>
                   </tr>
-                ))}
+                ) : (
+                  adRows.map((r) => (
+                    <tr key={r.placement} className="border-b border-black/[.06]">
+                      <td className="py-3 px-2">{r.placement}</td>
+                      <td className="py-3 px-2 text-right">{r.clicks}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
