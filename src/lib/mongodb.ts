@@ -88,9 +88,23 @@ export type ProductDoc = {
   updatedAt?: Date;
 };
 
-export async function getUsersCollection(): Promise<Collection<Document>> {
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  hashedPassword: string;
+  lastAnalysisDateTime?: Date;
+  skin_type?: string;
+  skin_concerns?: Array<{
+    name: string;
+    score: number;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export async function getUsersCollection(): Promise<Collection<IUser>> {
   const db = await getMongoDb();
-  return db.collection("users");
+  return db.collection<IUser>("users");
 }
 
 export async function getProductCollection(): Promise<Collection<ProductDoc>> {

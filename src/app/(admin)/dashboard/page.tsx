@@ -18,6 +18,9 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [userCount, setUserCount] = useState<number>(0);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [skinConcernsData, setSkinConcernsData] = useState<number[]>([]);
+  const [skinTypeData, setSkinTypeData] = useState<number[]>([]);
+  const [isLoadingCharts, setIsLoadingCharts] = useState(true);
 
   useEffect(() => {
     const fetchAds = async () => {
@@ -50,8 +53,25 @@ export default function DashboardPage() {
       }
     };
 
+    const fetchChartData = async () => {
+      try {
+        const response = await fetch("/api/users/chart-data");
+        if (!response.ok) {
+          throw new Error("Failed to fetch chart data");
+        }
+        const chartData = await response.json();
+        setSkinConcernsData(chartData.skinConcerns.data);
+        setSkinTypeData(chartData.skinTypes.data);
+      } catch (error) {
+        console.error("Error fetching chart data:", error);
+      } finally {
+        setIsLoadingCharts(false);
+      }
+    };
+
     fetchAds();
     fetchUserCount();
+    fetchChartData();
   }, []);
 
   // Create adRows from fetched ads data
@@ -106,11 +126,23 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section className="rounded border border-black/[.08] p-4">
           <h3 className="text-sm font-semibold mb-4">Top skin concerns</h3>
-          <TopSkinConcernsChart />
+          {isLoadingCharts ? (
+            <div className="h-64 flex items-center justify-center text-gray-500">
+              Loading chart data...
+            </div>
+          ) : (
+            <TopSkinConcernsChart data={skinConcernsData} />
+          )}
         </section>
         <section className="rounded border border-black/[.08] p-4">
           <h3 className="text-sm font-semibold mb-4">Skin type distribution</h3>
-          <SkinTypeDistributionChart />
+          {isLoadingCharts ? (
+            <div className="h-64 flex items-center justify-center text-gray-500">
+              Loading chart data...
+            </div>
+          ) : (
+            <SkinTypeDistributionChart data={skinTypeData} />
+          )}
         </section>
       </div>
     </div>

@@ -13,13 +13,17 @@ import {
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
-export function TopSkinConcernsChart() {
-  const data = {
+interface TopSkinConcernsChartProps {
+  data: number[];
+}
+
+export function TopSkinConcernsChart({ data }: TopSkinConcernsChartProps) {
+  const chartData = {
     labels: ["Pigmentation", "Acne", "Wrinkles", "Dryness", "Sensitivity"],
     datasets: [
       {
         label: "Count",
-        data: [32, 26, 18, 14, 10],
+        data: data,
         backgroundColor: ["#c9c5ff", "#a998ff", "#8e74ff", "#b7a6ff", "#e2ddff"],
         borderWidth: 0,
       },
@@ -44,18 +48,22 @@ export function TopSkinConcernsChart() {
   };
   return (
     <div className="h-64 w-full">
-      <Doughnut data={data} options={options} />
+      <Doughnut data={chartData} options={options} />
     </div>
   );
 }
 
-export function SkinTypeDistributionChart() {
-  const data = {
+interface SkinTypeDistributionChartProps {
+  data: number[];
+}
+
+export function SkinTypeDistributionChart({ data }: SkinTypeDistributionChartProps) {
+  const chartData = {
     labels: ["Combination", "Oily", "Dry", "Normal", "Sensitive"],
     datasets: [
       {
         label: "Users",
-        data: [28, 36, 18, 24, 32],
+        data: data,
         backgroundColor: "#8e74ff",
         borderRadius: 6,
       },
@@ -69,7 +77,7 @@ export function SkinTypeDistributionChart() {
   };
   return (
     <div className="h-64 w-full">
-      <Bar data={data} options={options} />
+      <Bar data={chartData} options={options} />
     </div>
   );
 }
