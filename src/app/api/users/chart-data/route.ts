@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUsersCollection } from "@/lib/mongodb";
+import { getUsersCollection, IUser } from "@/lib/mongodb";
 
 export async function GET() {
   try {
@@ -15,10 +15,10 @@ export async function GET() {
     const skinTypeCounts = new Array(skinTypeLabels.length).fill(0);
 
     // Process each user
-    users.forEach((user: any) => {
+    users.forEach((user: IUser) => {
       // Count skin concerns
       if (user.skin_concerns && Array.isArray(user.skin_concerns)) {
-        user.skin_concerns.forEach((concern: any) => {
+        user.skin_concerns.forEach((concern: { name: string; score: number }) => {
           const concernIndex = skinConcernLabels.findIndex(
             label => label.toLowerCase() === concern.name.toLowerCase()
           );
@@ -31,7 +31,7 @@ export async function GET() {
       // Count skin types
       if (user.skin_type) {
         const skinTypeIndex = skinTypeLabels.findIndex(
-          label => label.toLowerCase() === user.skin_type.toLowerCase()
+          label => label.toLowerCase() === user.skin_type!.toLowerCase()
         );
         if (skinTypeIndex !== -1) {
           skinTypeCounts[skinTypeIndex]++;
