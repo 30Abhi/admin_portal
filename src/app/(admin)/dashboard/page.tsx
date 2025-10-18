@@ -19,6 +19,7 @@ export default function DashboardPage() {
   const [userCount, setUserCount] = useState<number>(0);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [skinConcernsData, setSkinConcernsData] = useState<number[]>([]);
+  const [skinConcernsLabels, setSkinConcernsLabels] = useState<string[]>([]);
   const [skinTypeData, setSkinTypeData] = useState<number[]>([]);
   const [isLoadingCharts, setIsLoadingCharts] = useState(true);
 
@@ -61,6 +62,7 @@ export default function DashboardPage() {
         }
         const chartData = await response.json();
         setSkinConcernsData(chartData.skinConcerns.data);
+        setSkinConcernsLabels(chartData.skinConcerns.labels);
         setSkinTypeData(chartData.skinTypes.data);
       } catch (error) {
         console.error("Error fetching chart data:", error);
@@ -131,7 +133,7 @@ export default function DashboardPage() {
               Loading chart data...
             </div>
           ) : (
-            <TopSkinConcernsChart data={skinConcernsData} />
+            <TopSkinConcernsChart labels={skinConcernsLabels} data={skinConcernsData} />
           )}
         </section>
         <section className="rounded border border-black/[.08] p-4">

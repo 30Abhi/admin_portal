@@ -14,16 +14,22 @@ import {
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 interface TopSkinConcernsChartProps {
+  labels: string[];
   data: number[];
 }
 
-export function TopSkinConcernsChart({ data }: TopSkinConcernsChartProps) {
+export function TopSkinConcernsChart({ labels, data }: TopSkinConcernsChartProps) {
+  // Filter out zero values while maintaining label order
+  const filteredData = labels
+    .map((label, index) => ({ label, value: data[index] || 0 }))
+    .filter(item => item.value > 0);
+
   const chartData = {
-    labels: ["Pigmentation", "Acne", "Wrinkles", "Dryness", "Sensitivity"],
+    labels: filteredData.map(item => item.label),
     datasets: [
       {
-        label: "Count",
-        data: data,
+        label: "Percentage",
+        data: filteredData.map(item => item.value),
         backgroundColor: ["#c9c5ff", "#a998ff", "#8e74ff", "#b7a6ff", "#e2ddff"],
         borderWidth: 0,
       },

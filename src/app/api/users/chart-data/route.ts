@@ -7,23 +7,23 @@ export async function GET() {
     const users = await collection.find({}).toArray();
 
     // Define the chart labels
-    const skinConcernLabels = ["Pigmentation", "Acne", "Wrinkles", "Dryness", "Sensitivity"];
+    const skinConcernLabels = ["Pores", "Redness", "Pigmentation", "Acne", "Wrinkles"];
     const skinTypeLabels = ["Combination", "Oily", "Dry", "Normal", "Sensitive"];
 
-    // Initialize counters
-    const skinConcernCounts = new Array(skinConcernLabels.length).fill(0);
+    // Initialize score totals for skin concerns
+    const skinConcernTotals = new Array(skinConcernLabels.length).fill(0);
     const skinTypeCounts = new Array(skinTypeLabels.length).fill(0);
 
     // Process each user
     users.forEach((user: IUser) => {
-      // Count skin concerns
+      // Aggregate skin concern scores
       if (user.skin_concerns && Array.isArray(user.skin_concerns)) {
         user.skin_concerns.forEach((concern: { name: string; score: number }) => {
           const concernIndex = skinConcernLabels.findIndex(
             label => label.toLowerCase() === concern.name.toLowerCase()
           );
           if (concernIndex !== -1) {
-            skinConcernCounts[concernIndex]++;
+            skinConcernTotals[concernIndex] += concern.score;
           }
         });
       }
@@ -39,10 +39,16 @@ export async function GET() {
       }
     });
 
+    // Calculate percentages for skin concerns
+    const totalScore = skinConcernTotals.reduce((sum, score) => sum + score, 0);
+    const skinConcernPercentages = skinConcernTotals.map(score => 
+      totalScore > 0 ? (score / totalScore) * 100 : 0
+    );
+
     return NextResponse.json({
       skinConcerns: {
         labels: skinConcernLabels,
-        data: skinConcernCounts
+        data: skinConcernPercentages
       },
       skinTypes: {
         labels: skinTypeLabels,
