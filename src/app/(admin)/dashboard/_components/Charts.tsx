@@ -19,10 +19,11 @@ interface TopSkinConcernsChartProps {
 }
 
 export function TopSkinConcernsChart({ labels, data }: TopSkinConcernsChartProps) {
-  // Filter out zero values while maintaining label order
+  // Filter out zero values and sort by descending order
   const filteredData = labels
     .map((label, index) => ({ label, value: data[index] || 0 }))
-    .filter(item => item.value > 0);
+    .filter(item => item.value > 0)
+    .sort((a, b) => b.value - a.value); // Sort in descending order
 
   const chartData = {
     labels: filteredData.map(item => item.label),
