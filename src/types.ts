@@ -99,6 +99,21 @@ export type DermFormState = {
   couponCode: string;
 };
 
+// Admin types
+export type Admin = {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+};
+
+export type AdminFormState = {
+  name: string;
+  email: string;
+  password: string;
+  changePassword: boolean;
+};
+
 // PillSelect props
 export type PillSelectProps = {
   label: string;

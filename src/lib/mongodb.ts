@@ -20,9 +20,9 @@ export async function getMongoDb(): Promise<Db> {
   return db;
 }
 
-export async function getAdminCollection(): Promise<Collection<{ email: string; password: string }>> {
+export async function getAdminCollection(): Promise<Collection<{ name: string; email: string; password: string }>> {
   const db = await getMongoDb();
-  return db.collection<{ email: string; password: string }>("admin");
+  return db.collection<{ name: string; email: string; password: string }>("admin");
 }
 
 export type Dermatologist = {
