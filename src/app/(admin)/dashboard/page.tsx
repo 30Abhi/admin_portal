@@ -80,6 +80,8 @@ export default function DashboardPage() {
   const adRows = ads.map(ad => ({
     placement: adPlacementNames[ad.adNumber] || `Ad ${ad.adNumber}`,
     clicks: ad.countclick || 0,
+    impressions: ad.countimpression || 0,
+    ctr: ad.countimpression && ad.countimpression > 0 ? ((ad.countclick || 0) / ad.countimpression * 100).toFixed(2) : "0.00",
   }));
 
   return (
@@ -90,17 +92,19 @@ export default function DashboardPage() {
         <section className="rounded border border-black/[.08] p-4">
           <h2 className="text-sm font-semibold px-2 pb-2">Advertisement Performance</h2>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[300px]">
+            <table className="w-full text-sm min-w-[400px]">
               <thead className="text-xs text-black/60">
                 <tr className="border-y border-black/[.06]">
                   <th className="text-left py-2 px-2">Ad Placement</th>
+                  <th className="text-right py-2 px-2">Impressions</th>
                   <th className="text-right py-2 px-2">Clicks</th>
+                  <th className="text-right py-2 px-2">CTR (%)</th>
                 </tr>
               </thead>
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={2} className="py-3 px-2 text-center text-gray-500">
+                    <td colSpan={4} className="py-3 px-2 text-center text-gray-500">
                       Loading ad data...
                     </td>
                   </tr>
@@ -108,7 +112,9 @@ export default function DashboardPage() {
                   adRows.map((r) => (
                     <tr key={r.placement} className="border-b border-black/[.06]">
                       <td className="py-3 px-2">{r.placement}</td>
-                      <td className="py-3 px-2 text-right">{r.clicks}</td>
+                      <td className="py-3 px-2 text-right">{r.impressions.toLocaleString()}</td>
+                      <td className="py-3 px-2 text-right">{r.clicks.toLocaleString()}</td>
+                      <td className="py-3 px-2 text-right">{r.ctr}</td>
                     </tr>
                   ))
                 )}
