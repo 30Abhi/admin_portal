@@ -23,7 +23,17 @@ export async function GET(req: NextRequest) {
     const impressionCollection = await getAdImpressionEventCollection();
 
     // Build filter query
-    const filter: any = {
+    const filter: {
+      adNumber: number;
+      timestamp?: {
+        $gte?: Date;
+        $lte?: Date;
+      };
+      $or?: Array<{
+        userEmail?: { $regex: string; $options: string };
+        userName?: { $regex: string; $options: string };
+      }>;
+    } = {
       adNumber: adNumber,
     };
 

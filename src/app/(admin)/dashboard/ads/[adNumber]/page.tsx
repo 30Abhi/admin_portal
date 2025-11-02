@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import type { AdUserAnalytics } from "@/types";
@@ -24,7 +24,7 @@ export default function AdDetailPage() {
   const [search, setSearch] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchData = useCallback(async (searchValue?: string) => {
     if (isNaN(adNumber) || adNumber < 1 || adNumber > 6) {
@@ -72,19 +72,17 @@ export default function AdDetailPage() {
 
   useEffect(() => {
     // Debounce search to avoid too many API calls
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
 
-    const timeout = setTimeout(() => {
+    searchTimeoutRef.current = setTimeout(() => {
       fetchData(search);
     }, 300);
 
-    setSearchTimeout(timeout);
-
     return () => {
-      if (timeout) {
-        clearTimeout(timeout);
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
       }
     };
   }, [search, fetchData]);

@@ -11,7 +11,12 @@ export async function GET(req: NextRequest) {
     const impressionCollection = await getAdImpressionEventCollection();
 
     // Build filter query for date range
-    const filter: any = {};
+    const filter: {
+      timestamp?: {
+        $gte?: Date;
+        $lte?: Date;
+      };
+    } = {};
 
     if (fromDateParam || toDateParam) {
       filter.timestamp = {};
