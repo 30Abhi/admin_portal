@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
 
     await s3Client.send(putCommand);
 
-    // Create a pre-signed GET URL valid for 1 hour
+    // Create a pre-signed GET URL valid for 7 days 
     const getCommand = new GetObjectCommand({
       Bucket: process.env.AWS_S3_BUCKET_NAME!,
       Key: key,

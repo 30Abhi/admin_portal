@@ -126,4 +126,31 @@ export type PillSelectProps = {
   error?: string;
 };
 
+// Ad Event types
+export interface AdEvent {
+  _id?: string;
+  adNumber: number;
+  eventType: 'click' | 'impression';
+  userEmail: string;
+  userName: string;
+  timestamp: Date;
+  createdAt?: Date;
+}
+
+export interface AdClickEvent extends AdEvent {
+  eventType: 'click';
+}
+
+export interface AdImpressionEvent extends AdEvent {
+  eventType: 'impression';
+}
+
+// User analytics data for ad detail page
+export type AdUserAnalytics = {
+  userEmail: string;
+  userName: string;
+  clicks: number;
+  impressions: number;
+};
+
 

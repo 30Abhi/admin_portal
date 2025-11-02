@@ -113,3 +113,23 @@ export async function getProductCollection(): Promise<Collection<ProductDoc>> {
   return db.collection<ProductDoc>("products");
 }
 
+// Ad Event collection and types
+export type AdEventDoc = {
+  _id?: ObjectId;
+  adNumber: number;
+  eventType: 'click' | 'impression';
+  userEmail: string;
+  userName: string;
+  timestamp: Date;
+  createdAt?: Date;
+};
+
+export async function getAdClickEventCollection(): Promise<Collection<AdEventDoc>> {
+  const db = await getMongoDb();
+  return db.collection<AdEventDoc>("ad_click_events");
+}
+
+export async function getAdImpressionEventCollection(): Promise<Collection<AdEventDoc>> {
+  const db = await getMongoDb();
+  return db.collection<AdEventDoc>("ad_impression_events");
+}

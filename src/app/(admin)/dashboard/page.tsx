@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { TopSkinConcernsChart, SkinTypeDistributionChart } from "./_components/Charts";
 import type { AdSlot } from "@/types";
 
@@ -14,6 +15,7 @@ const adPlacementNames: Record<number, string> = {
 };
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [ads, setAds] = useState<AdSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userCount, setUserCount] = useState<number>(0);
@@ -78,11 +80,16 @@ export default function DashboardPage() {
 
   // Create adRows from fetched ads data
   const adRows = ads.map(ad => ({
+    adNumber: ad.adNumber,
     placement: adPlacementNames[ad.adNumber] || `Ad ${ad.adNumber}`,
     clicks: ad.countclick || 0,
     impressions: ad.countimpression || 0,
     ctr: ad.countimpression && ad.countimpression > 0 ? ((ad.countclick || 0) / ad.countimpression * 100).toFixed(2) : "0.00",
   }));
+
+  const handleRowClick = (adNumber: number) => {
+    router.push(`/dashboard/ads/${adNumber}`);
+  };
 
   return (
     <div className="flex flex-col gap-6 lg:gap-8">
@@ -110,7 +117,11 @@ export default function DashboardPage() {
                   </tr>
                 ) : (
                   adRows.map((r) => (
-                    <tr key={r.placement} className="border-b border-black/[.06]">
+                    <tr 
+                      key={r.placement} 
+                      className="border-b border-black/[.06] cursor-pointer hover:bg-black/[.02] transition-colors"
+                      onClick={() => handleRowClick(r.adNumber)}
+                    >
                       <td className="py-3 px-2">{r.placement}</td>
                       <td className="py-3 px-2 text-right">{r.impressions.toLocaleString()}</td>
                       <td className="py-3 px-2 text-right">{r.clicks.toLocaleString()}</td>
