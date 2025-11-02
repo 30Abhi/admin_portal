@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { TopSkinConcernsChart, SkinTypeDistributionChart } from "./_components/Charts";
 import type { AdSlot } from "@/types";
@@ -14,9 +14,16 @@ const adPlacementNames: Record<number, string> = {
   6: "Analytics Page",
 };
 
+type AdStats = {
+  adNumber: number;
+  clicks: number;
+  impressions: number;
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const [ads, setAds] = useState<AdSlot[]>([]);
+  const [adStats, setAdStats] = useState<AdStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userCount, setUserCount] = useState<number>(0);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
@@ -24,6 +31,29 @@ export default function DashboardPage() {
   const [skinConcernsLabels, setSkinConcernsLabels] = useState<string[]>([]);
   const [skinTypeData, setSkinTypeData] = useState<number[]>([]);
   const [isLoadingCharts, setIsLoadingCharts] = useState(true);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+
+  const fetchAdStats = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (fromDate) {
+        params.append("fromDate", fromDate);
+      }
+      if (toDate) {
+        params.append("toDate", toDate);
+      }
+
+      const response = await fetch(`/api/ads/stats?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch ad stats");
+      }
+      const statsData = await response.json();
+      setAdStats(statsData);
+    } catch (error) {
+      console.error("Error fetching ad stats:", error);
+    }
+  }, [fromDate, toDate]);
 
   useEffect(() => {
     const fetchAds = async () => {
@@ -78,17 +108,69 @@ export default function DashboardPage() {
     fetchChartData();
   }, []);
 
-  // Create adRows from fetched ads data
-  const adRows = ads.map(ad => ({
-    adNumber: ad.adNumber,
-    placement: adPlacementNames[ad.adNumber] || `Ad ${ad.adNumber}`,
-    clicks: ad.countclick || 0,
-    impressions: ad.countimpression || 0,
-    ctr: ad.countimpression && ad.countimpression > 0 ? ((ad.countclick || 0) / ad.countimpression * 100).toFixed(2) : "0.00",
-  }));
+  useEffect(() => {
+    // Only fetch stats if date filters are applied
+    if (fromDate || toDate) {
+      fetchAdStats();
+    } else {
+      // Clear stats when no filters are applied
+      setAdStats([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromDate, toDate]);
+
+  // Create adRows from fetched ads data, merging with stats if date filters are applied
+  const adRows = ads.map(ad => {
+    // If date filters are applied, use aggregated stats; otherwise use stored counts
+    const stats = adStats.find(s => s.adNumber === ad.adNumber);
+    const clicks = (fromDate || toDate) ? (stats?.clicks || 0) : (ad.countclick || 0);
+    const impressions = (fromDate || toDate) ? (stats?.impressions || 0) : (ad.countimpression || 0);
+    
+    return {
+      adNumber: ad.adNumber,
+      placement: adPlacementNames[ad.adNumber] || `Ad ${ad.adNumber}`,
+      clicks,
+      impressions,
+      ctr: impressions && impressions > 0 ? ((clicks / impressions) * 100).toFixed(2) : "0.00",
+    };
+  });
 
   const handleRowClick = (adNumber: number) => {
     router.push(`/dashboard/ads/${adNumber}`);
+  };
+
+  const handleExportCSV = () => {
+    const headers = ["Ad Placement", "Impressions", "Clicks", "CTR (%)"];
+    const rows = adRows.map((row) => [
+      row.placement,
+      row.impressions.toString(),
+      row.clicks.toString(),
+      row.ctr,
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+
+    // Create filename with date range if filters are applied
+    let filename = "ad-performance";
+    if (fromDate || toDate) {
+      const dateRange = `${fromDate || "start"}_to_${toDate || "end"}`;
+      filename += `-${dateRange}`;
+    }
+    filename += `-${new Date().toISOString().split("T")[0]}.csv`;
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -97,7 +179,54 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_240px] gap-6 lg:gap-8 items-start">
         <section className="rounded border border-black/[.08] p-4">
-          <h2 className="text-sm font-semibold px-2 pb-2">Advertisement Performance</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+            <h2 className="text-sm font-semibold px-2">Advertisement Performance</h2>
+            {/* Date Range Filters */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <label htmlFor="dashboard-fromDate" className="text-xs text-black/60 whitespace-nowrap">
+                  From:
+                </label>
+                <input
+                  id="dashboard-fromDate"
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="h-8 rounded border border-black/[.08] px-2 outline-none focus:ring-2 focus:ring-[#6c47ff]/30 text-xs"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="dashboard-toDate" className="text-xs text-black/60 whitespace-nowrap">
+                  To:
+                </label>
+                <input
+                  id="dashboard-toDate"
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="h-8 rounded border border-black/[.08] px-2 outline-none focus:ring-2 focus:ring-[#6c47ff]/30 text-xs"
+                />
+              </div>
+              {(fromDate || toDate) && (
+                <button
+                  onClick={() => {
+                    setFromDate("");
+                    setToDate("");
+                  }}
+                  className="h-8 px-2 rounded border border-black/[.08] hover:bg-black/[.02] text-xs transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+              <button
+                onClick={handleExportCSV}
+                disabled={isLoading || adRows.length === 0}
+                className="h-8 px-3 rounded bg-[#6c47ff] text-white text-xs whitespace-nowrap hover:bg-[#5a3ee6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Export CSV
+              </button>
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[400px]">
               <thead className="text-xs text-black/60">
