@@ -25,6 +25,7 @@ export default function DashboardPage() {
   const [ads, setAds] = useState<AdSlot[]>([]);
   const [adStats, setAdStats] = useState<AdStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [userCount, setUserCount] = useState<number>(0);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [skinConcernsData, setSkinConcernsData] = useState<number[]>([]);
@@ -35,6 +36,7 @@ export default function DashboardPage() {
   const [toDate, setToDate] = useState("");
 
   const fetchAdStats = useCallback(async () => {
+    setIsLoadingStats(true);
     try {
       const params = new URLSearchParams();
       if (fromDate) {
@@ -52,6 +54,8 @@ export default function DashboardPage() {
       setAdStats(statsData);
     } catch (error) {
       console.error("Error fetching ad stats:", error);
+    } finally {
+      setIsLoadingStats(false);
     }
   }, [fromDate, toDate]);
 
@@ -109,22 +113,17 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    // Only fetch stats if date filters are applied
-    if (fromDate || toDate) {
-      fetchAdStats();
-    } else {
-      // Clear stats when no filters are applied
-      setAdStats([]);
-    }
+    // Always fetch stats from event collections (new implementation)
+    fetchAdStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromDate, toDate]);
 
-  // Create adRows from fetched ads data, merging with stats if date filters are applied
+  // Create adRows using aggregated stats from event collections (always use new implementation)
   const adRows = ads.map(ad => {
-    // If date filters are applied, use aggregated stats; otherwise use stored counts
     const stats = adStats.find(s => s.adNumber === ad.adNumber);
-    const clicks = (fromDate || toDate) ? (stats?.clicks || 0) : (ad.countclick || 0);
-    const impressions = (fromDate || toDate) ? (stats?.impressions || 0) : (ad.countimpression || 0);
+    // Always use aggregated stats from event collections
+    const clicks = stats?.clicks || 0;
+    const impressions = stats?.impressions || 0;
     
     return {
       adNumber: ad.adNumber,
@@ -220,7 +219,7 @@ export default function DashboardPage() {
               )}
               <button
                 onClick={handleExportCSV}
-                disabled={isLoading || adRows.length === 0}
+                disabled={isLoading || isLoadingStats || adRows.length === 0}
                 className="h-8 px-3 rounded bg-[#6c47ff] text-white text-xs whitespace-nowrap hover:bg-[#5a3ee6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Export CSV
@@ -238,7 +237,7 @@ export default function DashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {isLoading ? (
+                {isLoading || isLoadingStats ? (
                   <tr>
                     <td colSpan={4} className="py-3 px-2 text-center text-gray-500">
                       Loading ad data...
