@@ -14,7 +14,7 @@ type Actions = {
   closeModal: () => void;
   setSearch: (q: string) => void;
   fetchAds: () => Promise<void>;
-  updateAd: (adNumber: number, imageUrl: string, targetUrl: string) => Promise<void>;
+  updateAd: (adNumber: number, imageUrl: string, targetUrl: string, extra?: Partial<Pick<AdSlot, "eventTrackerUrl" | "clickTrackerBaseUrl" | "impressionTrackerUrl">>) => Promise<void>;
   uploadAdImage: (adNumber: number, file: File) => Promise<string>;
 };
 
@@ -97,13 +97,16 @@ export const useAdsStore = create<Store>((set) => ({
       const data = await res.json();
       
       // Map API data to frontend format
-      const mappedAds: AdSlot[] = data.map((doc: Record<string, unknown>) => ({
+      const mappedAds: AdSlot[] = data.map((doc: Record<string, any>) => ({
         id: doc._id?.toString?.() ?? doc.id ?? crypto.randomUUID(),
         adNumber: doc.adNumber,
         section: doc.section,
         shape: doc.shape,
         imageUrl: doc.imageUrl || "",
         targetUrl: doc.targetUrl || "",
+        eventTrackerUrl: doc.eventTrackerUrl || "",
+        clickTrackerBaseUrl: doc.clickTrackerBaseUrl || "",
+        impressionTrackerUrl: doc.impressionTrackerUrl || "",
         order: doc.order,
         countclick: doc.countclick || 0,
         countimpression: doc.countimpression || 0,
@@ -124,12 +127,12 @@ export const useAdsStore = create<Store>((set) => ({
     }
   },
   
-  updateAd: async (adNumber, imageUrl, targetUrl) => {
+  updateAd: async (adNumber, imageUrl, targetUrl, extra) => {
     try {
       const res = await fetch("/api/ads/update", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ adNumber, imageUrl, targetUrl }),
+        body: JSON.stringify({ adNumber, imageUrl, targetUrl, ...(extra || {}) }),
       });
       
       if (!res.ok) {
@@ -141,11 +144,18 @@ export const useAdsStore = create<Store>((set) => ({
       
       // Update local state
       set((state) => ({
-        ads: state.ads.map(ad => 
-          ad.adNumber === adNumber 
-            ? { ...ad, imageUrl, targetUrl, updatedAt: updatedAd.updatedAt }
-            : ad
-        )
+        ads: state.ads.map(ad => {
+          if (ad.adNumber !== adNumber) return ad;
+          return {
+            ...ad,
+            imageUrl,
+            targetUrl,
+            eventTrackerUrl: extra?.eventTrackerUrl ?? ad.eventTrackerUrl,
+            clickTrackerBaseUrl: extra?.clickTrackerBaseUrl ?? ad.clickTrackerBaseUrl,
+            impressionTrackerUrl: extra?.impressionTrackerUrl ?? ad.impressionTrackerUrl,
+            updatedAt: updatedAd.updatedAt,
+          };
+        })
       }));
     } catch (error) {
       console.error("Failed to update ad:", error);

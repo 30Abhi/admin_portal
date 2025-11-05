@@ -58,6 +58,9 @@ export type AdSlot = {
   shape: "square" | "banner-wide" | "banner-medium" | "poster";
   imageUrl?: string;
   targetUrl?: string;
+  eventTrackerUrl?: string;
+  clickTrackerBaseUrl?: string;
+  impressionTrackerUrl?: string;
   order: number;
   countclick?: number; // New field for tracking click counts
   countimpression?: number; // NEW: track ad impressions

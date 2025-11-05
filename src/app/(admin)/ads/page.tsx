@@ -73,6 +73,87 @@ function AdSlotComponent({ ad, label, description }: AdSlotProps) {
     }
   };
 
+  const handleEventTrackerClick = async () => {
+    if (!ad.imageUrl) {
+      toast.error("No image uploaded yet");
+      return;
+    }
+    const current = ad.eventTrackerUrl || "";
+    const input = window.prompt("Enter event tracker URL (include https://)", current);
+    if (input === null) return;
+    const trimmed = input.trim();
+    try {
+      if (trimmed.length > 0) {
+        const url = new URL(trimmed);
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+          toast.error("URL must start with http or https");
+          return;
+        }
+        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { eventTrackerUrl: trimmed });
+        toast.success("Event tracker URL updated");
+      } else {
+        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { eventTrackerUrl: "" });
+        toast.success("Event tracker URL cleared");
+      }
+    } catch {
+      toast.error("Invalid URL");
+    }
+  };
+
+  const handleClickTrackerBaseClick = async () => {
+    if (!ad.imageUrl) {
+      toast.error("No image uploaded yet");
+      return;
+    }
+    const current = ad.clickTrackerBaseUrl || "";
+    const input = window.prompt("Enter click tracker base URL (include https://)", current);
+    if (input === null) return;
+    const trimmed = input.trim();
+    try {
+      if (trimmed.length > 0) {
+        const url = new URL(trimmed);
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+          toast.error("URL must start with http or https");
+          return;
+        }
+        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { clickTrackerBaseUrl: trimmed });
+        toast.success("Click tracker base URL updated");
+      } else {
+        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { clickTrackerBaseUrl: "" });
+        toast.success("Click tracker base URL cleared");
+      }
+    } catch {
+      toast.error("Invalid URL");
+    }
+  };
+
+  const handleImpressionTrackerClick = async () => {
+    if (!ad.imageUrl) {
+      toast.error("No image uploaded yet");
+      return;
+    }
+    const current = ad.impressionTrackerUrl || "";
+    const input = window.prompt("Enter impression tracker URL (include https://)", current);
+    if (input === null) return;
+    const trimmed = input.trim();
+    try {
+      if (trimmed.length > 0) {
+        const url = new URL(trimmed);
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+          toast.error("URL must start with http or https");
+          return;
+        }
+        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { impressionTrackerUrl: trimmed });
+        toast.success("Impression tracker URL updated");
+      } else {
+        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { impressionTrackerUrl: "" });
+        toast.success("Impression tracker URL cleared");
+      }
+    } catch {
+      toast.error("Invalid URL");
+    }
+  };
+
   const shapeClasses = (() => {
     switch (ad.shape) {
       case "square":
@@ -115,19 +196,37 @@ function AdSlotComponent({ ad, label, description }: AdSlotProps) {
           )}
         </div>
         <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={onChange} disabled={isUploading} />
-        <div className="mt-3 flex items-center justify-center gap-2">
+        <div className="mt-3 flex items-center justify-center gap-2 flex-wrap">
           <IconButton onClick={handlePick} label="Upload" disabled={isUploading}>
             <UploadIcon className="h-4 w-4" />
           </IconButton>
           <IconButton onClick={handleLinkClick} label="Link" disabled={isUploading || !hasImage}>
             <LinkIcon  className="h-4 w-4" />
           </IconButton>
+          <IconButton onClick={handleEventTrackerClick} label="Event Tracker" disabled={isUploading || !hasImage}>
+            <span className="text-[10px] font-medium">EVT</span>
+          </IconButton>
+          <IconButton onClick={handleClickTrackerBaseClick} label="Click Tracker Base" disabled={isUploading || !hasImage}>
+            <span className="text-[10px] font-medium">CLK</span>
+          </IconButton>
+          <IconButton onClick={handleImpressionTrackerClick} label="Impression Tracker" disabled={isUploading || !hasImage}>
+            <span className="text-[10px] font-medium">IMP</span>
+          </IconButton>
         </div>
-        {hasTargetUrl && (
-          <div className="mt-2 text-xs text-green-600">
-            ✓ Target URL set
-          </div>
-        )}
+        <div className="mt-2 grid grid-cols-1 gap-1 text-xs">
+          {hasTargetUrl && (
+            <div className="text-green-600">✓ Target URL set</div>
+          )}
+          {ad.eventTrackerUrl && (
+            <div className="text-green-600">✓ Event tracker set</div>
+          )}
+          {ad.clickTrackerBaseUrl && (
+            <div className="text-green-600">✓ Click tracker base set</div>
+          )}
+          {ad.impressionTrackerUrl && (
+            <div className="text-green-600">✓ Impression tracker set</div>
+          )}
+        </div>
       </div>
       
       {/* Image Modal */}

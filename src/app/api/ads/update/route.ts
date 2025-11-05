@@ -4,7 +4,7 @@ import { getAdSlotCollection, AdSlot } from "@/lib/mongodb";
 export async function PATCH(req: NextRequest) {
   try {
     const body = (await req.json()) as Partial<AdSlot> & { adNumber: number };
-    const { adNumber, imageUrl, targetUrl, countclick, countimpression } = body;
+    const { adNumber, imageUrl, targetUrl, eventTrackerUrl, clickTrackerBaseUrl, impressionTrackerUrl, countclick, countimpression } = body;
 
     if (!adNumber || (adNumber < 1 || adNumber > 6)) {
       return NextResponse.json({ error: "Valid adNumber (1-6) is required" }, { status: 400 });
@@ -24,6 +24,9 @@ export async function PATCH(req: NextRequest) {
       
       if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
       if (targetUrl !== undefined) updateData.targetUrl = targetUrl;
+      if (eventTrackerUrl !== undefined) updateData.eventTrackerUrl = eventTrackerUrl;
+      if (clickTrackerBaseUrl !== undefined) updateData.clickTrackerBaseUrl = clickTrackerBaseUrl;
+      if (impressionTrackerUrl !== undefined) updateData.impressionTrackerUrl = impressionTrackerUrl;
       if (countclick !== undefined) updateData.countclick = countclick;
       if (countimpression !== undefined) updateData.countimpression = countimpression;
 
@@ -47,6 +50,9 @@ export async function PATCH(req: NextRequest) {
         order: adNumber,
         imageUrl: imageUrl || "",
         targetUrl: targetUrl || "",
+        eventTrackerUrl: eventTrackerUrl || "",
+        clickTrackerBaseUrl: clickTrackerBaseUrl || "",
+        impressionTrackerUrl: impressionTrackerUrl || "",
         countclick: countclick || 0,
         countimpression: countimpression || 0,
         createdAt: now,
