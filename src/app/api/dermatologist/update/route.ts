@@ -14,6 +14,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { _id, ...rest } = body as Record<string, unknown>;
     const update: Partial<Dermatologist> = { ...(rest as Partial<Dermatologist>), updatedAt: new Date() };
 

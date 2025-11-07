@@ -97,21 +97,21 @@ export const useAdsStore = create<Store>((set) => ({
       const data = await res.json();
       
       // Map API data to frontend format
-      const mappedAds: AdSlot[] = data.map((doc: Record<string, any>) => ({
-        id: doc._id?.toString?.() ?? doc.id ?? crypto.randomUUID(),
-        adNumber: doc.adNumber,
-        section: doc.section,
-        shape: doc.shape,
-        imageUrl: doc.imageUrl || "",
-        targetUrl: doc.targetUrl || "",
-        eventTrackerUrl: doc.eventTrackerUrl || "",
-        clickTrackerBaseUrl: doc.clickTrackerBaseUrl || "",
-        impressionTrackerUrl: doc.impressionTrackerUrl || "",
-        order: doc.order,
-        countclick: doc.countclick || 0,
-        countimpression: doc.countimpression || 0,
-        createdAt: doc.createdAt,
-        updatedAt: doc.updatedAt,
+      const mappedAds: AdSlot[] = data.map((doc: Record<string, unknown>) => ({
+        id: (doc._id as { toString?: () => string })?.toString?.() ?? (doc.id as string) ?? crypto.randomUUID(),
+        adNumber: doc.adNumber as number,
+        section: doc.section as AdSlot["section"],
+        shape: doc.shape as AdSlot["shape"],
+        imageUrl: (doc.imageUrl as string) || "",
+        targetUrl: (doc.targetUrl as string) || "",
+        eventTrackerUrl: (doc.eventTrackerUrl as string) || "",
+        clickTrackerBaseUrl: (doc.clickTrackerBaseUrl as string) || "",
+        impressionTrackerUrl: (doc.impressionTrackerUrl as string) || "",
+        order: doc.order as number,
+        countclick: (doc.countclick as number) || 0,
+        countimpression: (doc.countimpression as number) || 0,
+        createdAt: doc.createdAt as Date | undefined,
+        updatedAt: doc.updatedAt as Date | undefined,
       }));
 
       // Merge with default slots to ensure all 6 slots exist
