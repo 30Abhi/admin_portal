@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  compiler: {
+    // Remove all console logs in production
+    removeConsole: process.env.NODE_ENV === "production",
+  },
 };
 
 export default nextConfig;
