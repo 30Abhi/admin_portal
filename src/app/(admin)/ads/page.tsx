@@ -13,9 +13,12 @@ type AdSlotProps = {
   description?: string;
 };
 
+type UrlModalType = "targetUrl" | "eventTrackerUrl" | "clickTrackerBaseUrl" | "impressionTrackerUrl" | null;
+
 function AdSlotComponent({ ad, label, description }: AdSlotProps) {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [showImageModal, setShowImageModal] = useState<boolean>(false);
+  const [urlModalType, setUrlModalType] = useState<UrlModalType>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { updateAd, uploadAdImage } = useAdsStore();
 
@@ -42,116 +45,36 @@ function AdSlotComponent({ ad, label, description }: AdSlotProps) {
     }
   };
 
-  const handleLinkClick = async () => {
+  const handleLinkClick = () => {
     if (!ad.imageUrl) {
       toast.error("No image uploaded yet");
       return;
     }
-    const current = ad.targetUrl || "";
-    const input = window.prompt("Enter target URL (include https://)", current);
-    if (input === null) return; // user cancelled
-    const trimmed = input.trim();
-    try {
-      if (trimmed.length > 0) {
-        // Validate URL
-        // new URL will throw if invalid
-        // Allow http and https
-        const url = new URL(trimmed);
-        if (url.protocol !== "http:" && url.protocol !== "https:") {
-          toast.error("URL must start with http or https");
-          return;
-        }
-        await updateAd(ad.adNumber, ad.imageUrl!, trimmed);
-        toast.success("Link updated");
-      } else {
-        // Clear link
-        await updateAd(ad.adNumber, ad.imageUrl!, "");
-        toast.success("Link cleared");
-      }
-    } catch {
-      toast.error("Invalid URL");
-    }
+    setUrlModalType("targetUrl");
   };
 
-  const handleEventTrackerClick = async () => {
+  const handleEventTrackerClick = () => {
     if (!ad.imageUrl) {
       toast.error("No image uploaded yet");
       return;
     }
-    const current = ad.eventTrackerUrl || "";
-    const input = window.prompt("Enter event tracker URL (include https://)", current);
-    if (input === null) return;
-    const trimmed = input.trim();
-    try {
-      if (trimmed.length > 0) {
-        const url = new URL(trimmed);
-        if (url.protocol !== "http:" && url.protocol !== "https:") {
-          toast.error("URL must start with http or https");
-          return;
-        }
-        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { eventTrackerUrl: trimmed });
-        toast.success("Event tracker URL updated");
-      } else {
-        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { eventTrackerUrl: "" });
-        toast.success("Event tracker URL cleared");
-      }
-    } catch {
-      toast.error("Invalid URL");
-    }
+    setUrlModalType("eventTrackerUrl");
   };
 
-  const handleClickTrackerBaseClick = async () => {
+  const handleClickTrackerBaseClick = () => {
     if (!ad.imageUrl) {
       toast.error("No image uploaded yet");
       return;
     }
-    const current = ad.clickTrackerBaseUrl || "";
-    const input = window.prompt("Enter click tracker base URL (include https://)", current);
-    if (input === null) return;
-    const trimmed = input.trim();
-    try {
-      if (trimmed.length > 0) {
-        const url = new URL(trimmed);
-        if (url.protocol !== "http:" && url.protocol !== "https:") {
-          toast.error("URL must start with http or https");
-          return;
-        }
-        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { clickTrackerBaseUrl: trimmed });
-        toast.success("Click tracker base URL updated");
-      } else {
-        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { clickTrackerBaseUrl: "" });
-        toast.success("Click tracker base URL cleared");
-      }
-    } catch {
-      toast.error("Invalid URL");
-    }
+    setUrlModalType("clickTrackerBaseUrl");
   };
 
-  const handleImpressionTrackerClick = async () => {
+  const handleImpressionTrackerClick = () => {
     if (!ad.imageUrl) {
       toast.error("No image uploaded yet");
       return;
     }
-    const current = ad.impressionTrackerUrl || "";
-    const input = window.prompt("Enter impression tracker URL (include https://)", current);
-    if (input === null) return;
-    const trimmed = input.trim();
-    try {
-      if (trimmed.length > 0) {
-        const url = new URL(trimmed);
-        if (url.protocol !== "http:" && url.protocol !== "https:") {
-          toast.error("URL must start with http or https");
-          return;
-        }
-        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { impressionTrackerUrl: trimmed });
-        toast.success("Impression tracker URL updated");
-      } else {
-        await updateAd(ad.adNumber, ad.imageUrl || "", ad.targetUrl || "", { impressionTrackerUrl: "" });
-        toast.success("Impression tracker URL cleared");
-      }
-    } catch {
-      toast.error("Invalid URL");
-    }
+    setUrlModalType("impressionTrackerUrl");
   };
 
   const shapeClasses = (() => {
@@ -237,6 +160,76 @@ function AdSlotComponent({ ad, label, description }: AdSlotProps) {
           label={label}
         />
       )}
+
+      {/* URL Input Modal */}
+      {urlModalType && (
+        <UrlInputModal
+          type={urlModalType}
+          currentUrl={
+            urlModalType === "targetUrl" ? ad.targetUrl || "" :
+            urlModalType === "eventTrackerUrl" ? ad.eventTrackerUrl || "" :
+            urlModalType === "clickTrackerBaseUrl" ? ad.clickTrackerBaseUrl || "" :
+            ad.impressionTrackerUrl || ""
+          }
+          onClose={() => setUrlModalType(null)}
+          onSave={async (url) => {
+            const trimmed = url.trim();
+            try {
+              if (trimmed.length > 0) {
+                const urlObj = new URL(trimmed);
+                if (urlObj.protocol !== "http:" && urlObj.protocol !== "https:") {
+                  toast.error("URL must start with http or https");
+                  return;
+                }
+                
+                if (urlModalType === "targetUrl") {
+                  await updateAd(ad.adNumber, ad.imageUrl!, trimmed);
+                  toast.success("Link updated");
+                } else {
+                  await updateAd(
+                    ad.adNumber,
+                    ad.imageUrl || "",
+                    ad.targetUrl || "",
+                    {
+                      [urlModalType]: trimmed
+                    }
+                  );
+                  const labels = {
+                    eventTrackerUrl: "Event tracker URL",
+                    clickTrackerBaseUrl: "Click tracker base URL",
+                    impressionTrackerUrl: "Impression tracker URL"
+                  };
+                  toast.success(`${labels[urlModalType]} updated`);
+                }
+              } else {
+                // Clear URL
+                if (urlModalType === "targetUrl") {
+                  await updateAd(ad.adNumber, ad.imageUrl!, "");
+                  toast.success("Link cleared");
+                } else {
+                  await updateAd(
+                    ad.adNumber,
+                    ad.imageUrl || "",
+                    ad.targetUrl || "",
+                    {
+                      [urlModalType]: ""
+                    }
+                  );
+                  const labels = {
+                    eventTrackerUrl: "Event tracker URL",
+                    clickTrackerBaseUrl: "Click tracker base URL",
+                    impressionTrackerUrl: "Impression tracker URL"
+                  };
+                  toast.success(`${labels[urlModalType]} cleared`);
+                }
+              }
+              setUrlModalType(null);
+            } catch {
+              toast.error("Invalid URL");
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -274,6 +267,119 @@ function ImageModal({ imageUrl, onClose, label }: {
             sizes="(max-width: 768px) 100vw, 80vw"
           />
         </div>
+      </div>
+    </div>
+  );
+}
+
+function UrlInputModal({ 
+  type, 
+  currentUrl, 
+  onClose, 
+  onSave 
+}: { 
+  type: Exclude<UrlModalType, null>; 
+  currentUrl: string; 
+  onClose: () => void; 
+  onSave: (url: string) => Promise<void>;
+}) {
+  const [url, setUrl] = useState(currentUrl);
+  const [isSaving, setIsSaving] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Focus input when modal opens
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    try {
+      await onSave(url);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      onClose();
+    }
+  };
+
+  const labels = {
+    targetUrl: "Target URL",
+    eventTrackerUrl: "Event Tracker URL",
+    clickTrackerBaseUrl: "Click Tracker Base URL",
+    impressionTrackerUrl: "Impression Tracker URL"
+  };
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      onKeyDown={handleKeyDown}
+    >
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {labels[type]}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            aria-label="Close modal"
+            disabled={isSaving}
+          >
+            <CloseIcon className="h-5 w-5" />
+          </button>
+        </div>
+        
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="p-4">
+          <div className="mb-4">
+            <label htmlFor="url-input" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Enter URL (include https://)
+            </label>
+            <input
+              ref={inputRef}
+              id="url-input"
+              type="text"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://example.com"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+              disabled={isSaving}
+            />
+            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              Leave empty to clear the URL
+            </p>
+          </div>
+          
+          {/* Buttons */}
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isSaving}
+              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
